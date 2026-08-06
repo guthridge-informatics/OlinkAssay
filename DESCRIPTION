@@ -1,0 +1,14 @@
+Package: olinkqc
+Title: Olink HT quality control, processing, and organization
+Version: 0.0.0.9000
+Authors@R: 
+    person("Ben", "Jones", , "ben.jones@omrf.org", role = c("aut", "cre")),
+    person("Miles", "Smith", , "miles.smith@omrf.org", role = c("aut", "cre"), comment = c(ORCID = "0000-0003-0651-809X")),
+    person("Rufei", "Lu", , "rufei.lu@omrf.org", role = c("aut", "cre"), comment = c(ORCID = "0009-0007-3644-4702")),
+Description: Used for initial processing of Olink HT data. Runs quality control,
+ performs batch correction, filters bad samples and assays, and matches samples
+ to projects listed in an associated manifest.
+License: GPL (>= 3)
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+Config/roxygen2/version: 8.1.0

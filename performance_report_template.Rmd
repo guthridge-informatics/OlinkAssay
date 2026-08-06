@@ -1,0 +1,421 @@
+---
+title: "Assay Performance Report"
+author: "Guthridge Informatics"
+date: "`r Sys.Date()`"
+output: pdf_document
+
+params:
+  project_name: "Example Serum"
+  correction_procedure: "Plate Control Batch Correction"
+  level_1_file_path: NULL
+  level_2_file_path: NULL
+---
+
+
+```{r include= FALSE}
+library(tidyverse)
+library(arrow)
+library(flextable)
+library(here)
+
+
+source("\\\\data/ADI/Phenotyping_Core/01_Instrumentation/Olink_HT/02_Analysis_Projects/Olink_HT_QC/assoc_functions/Functions.R")
+source("\\\\data/ADI/Phenotyping_Core/01_Instrumentation/Olink_HT/02_Analysis_Projects/Olink_HT_QC/assoc_functions/Graphing Functions.R")
+
+
+# level_1_files <- lapply(list.files(here::here(
+#   "SDP",
+#   "Level_1"),
+#                                    pattern = "parquet",
+#                                    full.names = TRUE), arrow::read_parquet)
+
+level_1_files <- lapply(list.files(params$level_1_file_path,
+                                   pattern = "parquet",
+                                   full.names = TRUE), arrow::read_parquet)
+
+# level_1_files <- lapply(params$level_1_file_path, 
+#                         arrow::read_parquet)
+
+# level_2_files <- arrow::read_parquet(here::here("SDP", 
+# "Level_2", 
+# "Level 2 SDP.parquet"))
+
+level_2_files <- arrow::read_parquet(list.files(params$level_2_file_path,
+                                   pattern = "parquet",
+                                   full.names = TRUE))
+
+```
+## Project Information  
+`r params$project_name` Olink Explore HT `r Sys.Date() `
+
+`r params$correction_procedure` procedure utilized
+
+**`r {stringr::str_glue("{R.version$version.string} used for QC and QC report")} `**
+
+**`r {stringr::str_glue("Olink Explore HT software version {unique(level_2_files$SoftwareVersion)} used for QC and QC report")} `**
+
+
+## Manufacturer's Assay and Sample QC Information
+
+The following graphs summarize the overall assay performance and per-assay per-sample performance of the Olink Explore HT runs within the project. WARN and FAIL protein assay are removed from the Level-2 QC process. Conservatively, samples with any fail within any per-sample assay should be excluded from subsequent analysis. These samples are kept throughout the Level-2 QC process, however, they are labeled as "FAIL" in SampleQC column of the final Level-2 Parquet file. There are amplification, incubation, and extension controls that should be removed prior to analysis as these are assay controls
+
+```{r echo = FALSE, warning=FALSE, message=FALSE, results = 'hide', fig.keep = 'all'}
+qc_check <- lapply(level_1_files, Olink_QC)
+# Basic piechart
+
+lapply(qc_check, Plot_QC)
+
+
+```
+
+
+
+
+
+
+```{r echo = FALSE, warning=FALSE, message=FALSE}
+# get total of sample per each assay
+bound_level1 <-
+  level_1_files %>% 
+  bind_rows()
+
+n_assay <-
+  bound_level1 %>%
+  group_by(OlinkID) %>% 
+  summarise(count = n())
+
+sample_fails <-   
+  bound_level1 %>%
+  filter(SampleType == "SAMPLE") %>% 
+  filter(SampleQC == "FAIL") %>% 
+  group_by(SampleID) %>% 
+  summarise(., .groups = 'drop') 
+
+sample_tot <-  
+  bound_level1 %>%
+  filter(SampleType == "SAMPLE") %>% 
+  group_by(SampleID) %>% 
+  summarise(., .groups = 'drop')
+
+  
+# control failure
+control_fails <- bound_level1 %>% 
+  filter(SampleType != "SAMPLE") %>% 
+  filter(SampleQC == "FAIL") %>% 
+  group_by(PlateID, SampleID, WellID) %>% 
+  summarise(., .groups = 'drop')
+
+control_tot <- bound_level1 %>% 
+  filter(SampleType != "SAMPLE") %>% 
+  group_by(PlateID,SampleID, WellID) %>% 
+  summarise(., .groups = 'drop')
+
+
+if(nrow(sample_fails > 0)){
+  message_sample <- stringr::str_glue("Samples ", paste0(pull(sample_fails, SampleID), collapse = ', '), "  were removed prior to level 2 normalization")
+} else{ 
+  message_sample <- paste0("")
+}
+
+if(nrow(control_fails > 0)){
+  message_control <- stringr::str_glue("Controls ", paste0(pull(control_fails, SampleID), collapse = ', '), " were removed prior to level 2 normalization")
+} else{
+  message_control <- paste0("")
+}
+
+```
+
+**`r {paste0(nrow(sample_fails), "/", nrow(sample_tot), " samples were excluded from determination of level 2 correction due to the failure of one or more analytes")}`**
+
+`r {message_sample}`
+
+**`r {paste0(nrow(control_fails), "/", nrow(control_tot), " controls were removed from level 2 determination of assay_level_qc and sample_level_qc due to the failure of one or more analytes")}`**
+
+`r {message_control}`
+
+**Samples with failed analytes and percentages**
+```{r echo = FALSE, warning=FALSE, message=FALSE}
+table_failed <- bound_level1 %>% 
+  group_by(PlateID, SampleID, SampleQC) %>% 
+  summarise(Analyte_Failure_Pct = round(100*(n())/5444, digits = 2), 
+            .groups = 'drop') %>% 
+  filter(SampleQC == "FAIL") %>% 
+  select(-SampleQC)
+
+flextable(table_failed) %>% 
+  set_table_properties(., align = "center") %>% 
+  merge_v(j = ~ PlateID) %>% 
+  hline(i = rle(cumsum(.$body$spans$columns[,1] ))$values) %>% 
+  fix_border_issues() %>% 
+  flextable::autofit()
+```
+
+\pagebreak
+## Level 2 QC Information  
+Tabulated QC performance metrics after Level-1 and Level-2 processing per each source plate within the project. Remaining counts are quantifiable.   
+```{r echo = FALSE, warning=FALSE, message=FALSE}
+# Plate level qc
+
+plate_qc <- level_2_files %>% 
+  select(sample_level_qc, PlateID, OlinkID) %>% 
+  group_by(PlateID, sample_level_qc) %>% 
+  summarise(count = n(), .groups = 'drop') %>% 
+  group_by(PlateID) %>% 
+  mutate(percentage = round(100*count/sum(count), digits = 2)) %>% 
+  filter(sample_level_qc != "Pass")
+
+set_flextable_defaults(fonts_ignore = T)
+flextable(plate_qc) %>% 
+  set_table_properties(., align = "center") %>% 
+  merge_v(j = ~ PlateID) %>% 
+  hline(i = rle(cumsum(.$body$spans$columns[,1] ))$values) %>% 
+  fix_border_issues() %>% 
+  autofit()
+  
+
+```
+
+The following histograms show the distribution of the percentage of analytes below the lower limits of detection per sample per 96-well source plate:  
+
+```{r echo = FALSE, warning=FALSE, message=FALSE, results='hide', fig.keep = 'all'}
+## visualizing the per-plate data
+plate_list <- split(level_2_files, f = level_2_files$PlateID)
+
+graph_bars <- function(data){
+
+ data %>%
+    filter(sample_level_qc == "Below LLOD") %>%
+    group_by(SampleID, sample_level_qc) %>%
+    summarise(count = n(), .groups = 'drop') %>%
+    mutate(percentage = 100*count/5440) %>%  
+    ggplot(aes(x = SampleID, y =  percentage))+
+    geom_col()+
+    theme_classic()+
+    ylab("% Total Assays Below LLOD")+
+    theme(axis.text.x = element_blank(),
+          axis.ticks.x = element_blank())
+
+}
+
+
+upper_lim <- level_2_files %>%
+  filter(sample_level_qc == "Below LLOD") %>%
+  group_by(SampleID, sample_level_qc) %>%
+  summarise(count = n(), .groups = 'drop') %>%
+  mutate(lim_percentage = (100*count/5444) + 10)
+
+ylimit <- max(round(upper_lim$lim_percentage, digits = 0))
+
+purrr::imap(
+        .x = plate_list,
+        .f = \(x, i) {
+         graph_bars(x) + ggtitle(names(plate_list[i])) + ylim(c(0, ylimit))
+
+
+
+        }
+      )
+
+```
+
+## Comparison of batch-corrected data to non-batch corrected
+
+Batch-correction done using reference median calculated based on all source plate Plate Controls.
+
+### With High-Variance Analytes Retained
+```{r echo = FALSE, warning=FALSE, message=FALSE}
+# analytes with failure across plate
+missing_analytes <- level_2_files |> 
+  dplyr::filter(AssayType == "assay") |> 
+  dplyr::filter(is.na(ExtNPX)) |> 
+  dplyr::group_by(OlinkID) |> 
+  dplyr::summarise(count = n()) |> 
+  dplyr::filter(count > 80)
+
+umap_prep <- function(column){
+  
+  
+ pca_prep <- level_2_files |>
+  dplyr::filter(
+    SampleType == "SAMPLE", 
+    Project != "Bridge"
+  ) |>
+  dplyr::filter(
+    AssayType == "assay", 
+    !OlinkID %in% missing_analytes$OlinkID
+  ) |>
+  dplyr::mutate(
+    PlateID = stringr::str_split_i(
+      PlateID,
+      pattern = "_",
+      i = 1
+    )
+  ) |>
+  dplyr::mutate(ProteinID = paste0(Assay, "-", OlinkID)) |>
+  dplyr::select(
+    UniqueID,
+    SampleID,
+    PlateID,
+    WellID,
+    {{column}},
+    ProteinID 
+  ) |>
+  # dplyr::mutate(LogProtExp_Raw = batch_corrected + log2(1e5)) |>
+  tidyr::pivot_wider(
+    id_cols = c(
+      UniqueID,
+      SampleID,
+      PlateID,
+      WellID
+    ),
+    names_from = ProteinID,
+    values_from = {{column}}
+  ) |>
+  na.omit()
+
+set.seed(123)
+
+umap_res <- uwot::umap(
+  pca_prep[-c(1:4)],
+  scale = T,
+  min_dist = 0.4
+)
+
+
+scores <- as.data.frame(umap_res)
+colnames(scores) <- c("UMAP1", "UMAP2")
+
+scores$PlateID <- pca_prep$PlateID
+scores$SampleID <- pca_prep$SampleID
+
+scores |>
+  ggplot(aes(UMAP1, UMAP2, color = PlateID)) +
+  geom_point(size = 3) +
+  theme_minimal()
+
+}
+
+
+umap_prep(ExtNPX)+
+  ggtitle("Raw ExtNPX")+
+  theme(legend.text = element_text(face = "bold", 
+                                   size = 12), 
+        legend.title = element_blank(), 
+        axis.title = element_text(size = 12))
+
+umap_prep(ExtNPX_Corrected)+
+  ggtitle("Batch-Corrected ExtNPX")+
+  theme(legend.text = element_text(face = "bold", 
+                                   size = 12), 
+        legend.title = element_blank(), 
+        axis.title = element_text(size = 12))
+
+umap_prep(LogProtExp_Raw)+
+  ggtitle("Batch-Corrected LogProtExp")+
+  theme(legend.text = element_text(face = "bold", 
+                                   size = 12), 
+        legend.title = element_blank(), 
+        axis.title = element_text(size = 12))
+
+```
+
+
+### With High-Variance Analytes Removed  
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+
+assay_exclude <- level_2_files %>% 
+  filter(high_var_assay == "High Variance") %>% 
+  group_by(OlinkID, Assay) %>% 
+  summarise()
+
+umap_prep <- function(column){
+  
+  
+ pca_prep <- level_2_files |>
+  dplyr::filter(
+    SampleType == "SAMPLE", 
+    Project != "Bridge"
+  ) |>
+  dplyr::filter(
+    AssayType == "assay", 
+    !OlinkID %in% missing_analytes$OlinkID, 
+    !OlinkID %in% assay_exclude$OlinkID
+  ) |>
+  dplyr::mutate(
+    PlateID = stringr::str_split_i(
+      PlateID,
+      pattern = "_",
+      i = 1
+    )
+  ) |>
+  dplyr::mutate(ProteinID = paste0(Assay, "-", OlinkID)) |>
+  dplyr::select(
+    UniqueID,
+    SampleID,
+    PlateID,
+    WellID,
+    {{column}},
+    ProteinID 
+  ) |>
+  # dplyr::mutate(LogProtExp_Raw = batch_corrected + log2(1e5)) |>
+  tidyr::pivot_wider(
+    id_cols = c(
+      UniqueID,
+      SampleID,
+      PlateID,
+      WellID
+    ),
+    names_from = ProteinID,
+    values_from = {{column}}
+  ) |>
+  na.omit()
+
+set.seed(123)
+
+umap_res <- uwot::umap(
+  pca_prep[-c(1:4)],
+  scale = T,
+  min_dist = 0.4
+)
+
+
+scores <- as.data.frame(umap_res)
+colnames(scores) <- c("UMAP1", "UMAP2")
+
+scores$PlateID <- pca_prep$PlateID
+scores$SampleID <- pca_prep$SampleID
+
+scores |>
+  ggplot(aes(UMAP1, UMAP2, color = PlateID)) +
+  geom_point(size = 3) +
+  theme_minimal()
+
+}
+
+
+umap_prep(ExtNPX)+
+  ggtitle("Raw ExtNPX")+
+  theme(legend.text = element_text(face = "bold", 
+                                   size = 12), 
+        legend.title = element_blank(), 
+        axis.title = element_text(size = 12))
+
+umap_prep(ExtNPX_Corrected)+
+  ggtitle("Batch-Corrected ExtNPX")+
+  theme(legend.text = element_text(face = "bold", 
+                                   size = 12), 
+        legend.title = element_blank(), 
+        axis.title = element_text(size = 12))
+
+umap_prep(LogProtExp_Raw)+
+  ggtitle("Batch-Corrected LogProtExp")+
+  theme(legend.text = element_text(face = "bold", 
+                                   size = 12), 
+        legend.title = element_blank(), 
+        axis.title = element_text(size = 12))
+
+
+```
+
+**`r {nrow(assay_exclude)}`** analytes were removed from the UMAP due to C.V. > 20% for replicate Plate Controls. These technical high-variance analytes can be identified by filtering high_var_assay for "High Variance" analytes.

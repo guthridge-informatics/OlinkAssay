@@ -1,0 +1,21 @@
+[project]
+name = "olinkqc"
+
+[dependencies]
+arrow = "*"
+cowplot = "*"
+dbscan = "*"
+dplyr = "*"
+fs = "*"
+ggplot2 = "*"
+ggrepel = "*"
+magrittr = "*"
+pathviewr = "*"
+purrr = "*"
+readr = "*"
+readxl = "*"
+rmarkdown = "*"
+stringr = "*"
+tidyr = "*"
+tidyselect = "*"
+uwot = "*"
