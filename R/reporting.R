@@ -1,3 +1,5 @@
+# TODO: replace rmarkdown with quarto
+
 #' @title generate_performance_report
 #'
 #' @param project_name
@@ -8,19 +10,23 @@
 #'
 #' @returns
 #'
+#' @importFrom rmarkdown render
+#'
 #' @export
 #' @examples
 generate_performance_report <- function(
   project_name,
   correction_procedure,
   sdp_directory,
-  report_name = "assay_performance_report.pdf",
-  template_dir = "\\\\data/ADI/Phenotyping_Core/01_Instrumentation/Olink_HT/02_Analysis_Projects/Olink_HT_QC/Olink_HT"
+  output_dir,
+  report_name = "assay_performance_report.pdf"
 ) {
   # Construct commonly used paths
-  template_file <- file.path(
-    template_dir,
-    "performance_report_template.Rmd"
+
+  template_file <- system.file(
+    "rmd",
+    "performance_report_template.Rmd",
+    package = "olinkqc"
   )
 
   output_pdf <- file.path(
@@ -42,6 +48,7 @@ generate_performance_report <- function(
   rmarkdown::render(
     input = template_file,
     output_format = "pdf_document",
+    output_dir = output_dir,
     params = list(
       project_name = project_name,
       correction_procedure = correction_procedure,
@@ -53,16 +60,16 @@ generate_performance_report <- function(
 
   # Accessing the rendered pdf in the temporary storage location
   rendered_pdf <- file.path(
-    template_dir,
+    output_dir,
     "performance_report_template.pdf"
   )
 
   # Copy finished report to SDP directory
-  fs::file_copy(
-    path = rendered_pdf,
-    new_path = output_pdf,
-    overwrite = TRUE
-  )
+  # fs::file_copy(
+  #   path = rendered_pdf,
+  #   new_path = output_pdf,
+  #   overwrite = TRUE
+  # )
 
   invisible(output_pdf)
 }

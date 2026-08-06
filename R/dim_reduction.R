@@ -96,7 +96,7 @@ pca_to_umap <- function(data) {
   res_pca <- summary(pca)$importance |>
     t() |>
     data.frame() |>
-    dplyr::mutate(PCs = c(1:nrow(.)))
+    dplyr::mutate(PCs = c(seq_len(nrow(.))))
   n_pca <- pathviewr::find_curve_elbow(
     data_frame = res_pca[, c("PCs", "Proportion.of.Variance")],
     plot_curve = TRUE

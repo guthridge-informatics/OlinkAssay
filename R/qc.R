@@ -197,7 +197,7 @@ Olink_lvl2_prep <- function(data) {
 #' @examples
 Olink_lvl2 <- function(data, multifile = TRUE) {
   # concatenate all the data together
-  if (multifile == TRUE) {
+  if (multifile) {
     data <- Reduce(
       f = \(x, y) rbind(x, y),
       x = data

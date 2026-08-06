@@ -27,7 +27,7 @@
       {
         readxl::read_excel(
           path = x,
-          sheet = 1,
+          sheet = 1
         )
       } |>
         dplyr::select(sample_id = Assay_Sample_ID, Project)
