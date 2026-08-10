@@ -2,3 +2,6 @@
 ^\.Rproj\.user$
 ^LICENSE\.md$
 ^\.uvr
+^uvr\.toml$
+^uvr\.lock$
+^\.uvr$

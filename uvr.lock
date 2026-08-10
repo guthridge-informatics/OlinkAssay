@@ -472,6 +472,15 @@ requires = [
 ]
 
 [[package]]
+name = "here"
+version = "1.0.2"
+source = "cran"
+raw_version = "1.0.2"
+url = "https://cran.r-project.org/src/contrib/here_1.0.2.tar.gz"
+checksum = "md5:d2ff22b1f33c99b75ab3597ef0f79506"
+requires = ["rprojroot"]
+
+[[package]]
 name = "highr"
 version = "0.12.0"
 source = "cran"
@@ -532,6 +541,28 @@ requires = [
     "cli",
     "rlang",
     "cpp11",
+]
+
+[[package]]
+name = "janitor"
+version = "2.2.1"
+source = "cran"
+raw_version = "2.2.1"
+url = "https://cran.r-project.org/src/contrib/janitor_2.2.1.tar.gz"
+checksum = "md5:602dd5f791aa6a7d92bf029e1035d185"
+requires = [
+    "dplyr",
+    "hms",
+    "lifecycle",
+    "lubridate",
+    "magrittr",
+    "purrr",
+    "rlang",
+    "stringi",
+    "stringr",
+    "snakecase",
+    "tidyselect",
+    "tidyr",
 ]
 
 [[package]]
@@ -800,6 +831,14 @@ requires = [
 ]
 
 [[package]]
+name = "rprojroot"
+version = "2.1.1"
+source = "cran"
+raw_version = "2.1.1"
+url = "https://cran.r-project.org/src/contrib/rprojroot_2.1.1.tar.gz"
+checksum = "md5:307fef4f932acc1d8660a857e44d5fb7"
+
+[[package]]
 name = "sass"
 version = "0.4.10"
 source = "cran"
@@ -843,6 +882,18 @@ checksum = "md5:f2b3f8a088d2956cd1ef3a8f7e1e8c7e"
 requires = [
     "Rcpp",
     "Rcpp",
+]
+
+[[package]]
+name = "snakecase"
+version = "0.11.1"
+source = "cran"
+raw_version = "0.11.1"
+url = "https://cran.r-project.org/src/contrib/snakecase_0.11.1.tar.gz"
+checksum = "md5:3e5cbad0056783cff60d05eb75881f62"
+requires = [
+    "stringr",
+    "stringi",
 ]
 
 [[package]]

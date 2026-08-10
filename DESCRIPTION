@@ -13,6 +13,7 @@ License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 Config/roxygen2/version: 8.1.0
+Config/testthat/edition: 3
 NeedsCompilation: "no"
 URL: https://github.com/guthridge-informatics/olinkqc
 BugReports: https://github.com/guthridge-informatics/olinkqc/issues
@@ -24,13 +25,18 @@ Imports:
     dplyr,
     ggplot2,
     ggrepel,
+    here,
+    janitor,
     magrittr,
     pathviewr,
     purrr,
     readr,
     readxl,
+    rlang,
     rmarkdown,
     stringr,
     tidyr,
     tidyselect,
     uwot
+Suggests: 
+    testthat (>= 3.0.0)
