@@ -27,7 +27,6 @@ Imports:
     ggrepel,
     here,
     janitor,
-    magrittr,
     pathviewr,
     purrr,
     readr,

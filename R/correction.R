@@ -1,3 +1,24 @@
+#' @title ctrl_ref
+#' @description Calculate the default plate control batch correction
+#'
+#' @param data
+#'
+#' @returns
+#'
+#' @importFrom dplyr filter group_by summarize
+#'
+#' @export
+#' @examples
+ctrl_ref <- function(data) {
+  data |>
+    dplyr::filter(SampleType == "PLATE_CONTROL" & AssayType == "assay") |>
+    dplyr::group_by(OlinkID) |>
+    dplyr::summarise(
+      Median = median(na.omit(ExtNPX)),
+      Variance = var(na.omit(ExtNPX))
+    )
+}
+
 #' @title global_ref
 #' @description To be used for Studies where proper randomization can be verified or where plate controls cannot be used for normalization
 #'
@@ -27,43 +48,45 @@ global_ref <- function(data) {
 #'
 #' @returns
 #'
-#' @importFrom dplyr left_join select contains mutate
-#' @importFrom magrittr `%>%`
-#' @importFrom purrr map map2
+#' @importFrom dplyr left_join select mutate c_across transmute rowwise
+#' @importFrom purrr map map2 reduce
+#' @importFrom tidyselect contains
 #'
 #' @export
 #' @examples
 median_correction <- function(data, meds) {
   # calculate the medians for each 384-well plate
   ref_med <-
-    Reduce(
-      f = \(x, y) dplyr::left_join(x, y, by = "OlinkID"),
-      x = meds
+    purrr::reduce(
+      .x = meds,
+      .f = \(x, y) dplyr::left_join(x, y, by = "OlinkID")
     ) |> # left join all the run median and variance per each run
-    dplyr::select(dplyr::contains("Median")) |> # filter only the median column names
-    apply(1, mean) %>% # calculate the mean of all medians to scale it to it
-    data.frame(OlinkID = meds[[1]]$OlinkID, ReferenceMedian = .) # make a resulting data frame that contains the OlinkID and the reference median
+    # calculate the mean of all medians to scale by
+    # and make a tibble that contains the OlinkID and the reference median
+    dplyr::rowwise() |>
+    dplyr::transmute(
+      OlinkID = OlinkID,
+      ReferenceMedian = mean(dplyr::c_across(tidyselect::contains("Median")))
+    )
 
   meds_correction <-
     purrr::map(
       .x = meds,
-      .f = \(x) dplyr::left_join(x, ref_med)
-    ) %>%
-    purrr::map(
       .f = \(x) {
-        dplyr::mutate(x, Correction = Median - ReferenceMedian)
+        dplyr::left_join(x = x, y = ref_med) |>
+          dplyr::mutate(Correction = Median - ReferenceMedian)
       }
     )
 
   data_correction <-
     purrr::map2(
-      .x = data,
+      .x = exdata,
       .y = meds_correction,
-      .f = \(x, y) dplyr::left_join(x, y, by = "OlinkID")
-    ) %>%
-    purrr::map(.f = \(x) {
-      dplyr::mutate(x, ExtNPX_Corrected = ExtNPX - Correction)
-    })
+      .f = \(x, y) {
+        dplyr::left_join(x = x, y = y, by = "OlinkID") |>
+          dplyr::mutate(ExtNPX_Corrected = ExtNPX - Correction)
+      }
+    )
 
   data_correction
 }
@@ -82,33 +105,14 @@ median_correction <- function(data, meds) {
 #' @examples
 batch_correction <- function(data, method = c("median", "global median")) {
   method <- match.arg(method)
-
+  if (!is.vector(data)) {
+    data <- list(data)
+  }
   if (method == "median") {
-    meds <- purrr::map(.x = data, .F = ctrl_ref)
+    meds <- purrr::map(.x = data, .f = ctrl_ref)
   } else if (method == "global median") {
-    meds <- purrr::map(.x = data, .F = global_ref)
+    meds <- purrr::map(.x = data, .f = global_ref)
   }
 
   median_correction(data, meds)
-}
-
-#' @title ctrl_ref
-#' @description Calculate the default plate control batch correction
-#'
-#' @param data
-#'
-#' @returns
-#'
-#' @importFrom dplyr filter group_by summarize
-#'
-#' @export
-#' @examples
-ctrl_ref <- function(data) {
-  data |>
-    dplyr::filter(SampleType == "PLATE_CONTROL" & AssayType == "assay") |>
-    dplyr::group_by(OlinkID) |>
-    dplyr::summarise(
-      Median = median(na.omit(ExtNPX)),
-      Variance = var(na.omit(ExtNPX))
-    )
 }

@@ -3,7 +3,7 @@ testthat::test_that(desc = "ingest_olink_data", code = {
     "tests",
     "testthat",
     "data",
-    "io",
+    "common",
     "ingest_olink_data_expected.RDS"
   ))
   test_data_directory <- here::here("tests", "initial_data")
@@ -38,7 +38,7 @@ testthat::test_that(desc = "multifile_write", code = {
     "tests",
     "testthat",
     "data",
-    "io",
+    "common",
     "ingest_olink_data_expected.RDS"
   ))
   expected_manifest <- readRDS(here::here(
@@ -51,7 +51,6 @@ testthat::test_that(desc = "multifile_write", code = {
   path <- withr::local_tempfile()
   multifile_write(expected_data, file_extension = "parquet", proj_dir = path)
   multifile_write(expected_manifest, file_extension = "csv", proj_dir = path)
-  print(list.files(path))
   testthat::expect_snapshot_file(
     stringr::str_glue(
       "{path}/SDP/Level_1/FS19030710_NPX_2026-06-22.parquet"
