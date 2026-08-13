@@ -46,8 +46,8 @@
         )
       } |>
         dplyr::select(
-          sample_id = {{ sample_column }},
-          project = {{ project_column }}
+          SampleID = {{ sample_column }},
+          Project = {{ project_column }}
         )
     }
   } else if (file_extension == "csv") {
@@ -58,8 +58,8 @@
         file = x,
       ) |>
         dplyr::select(
-          sample_id = {{ sample_column }},
-          project = {{ project_column }}
+          SampleID = {{ sample_column }},
+          Project = {{ project_column }}
         )
     }
   } else {
@@ -76,16 +76,16 @@
   if (length(files_run) < 1) {
     stop(stringr::str_glue("No {file_extension} files were found!"))
   }
-  data <- purrr::map(.x = files_run, .f = read_func)
+  .data <- purrr::map(.x = files_run, .f = read_func)
 
-  names(data) <- stringr::str_split_i(
+  names(.data) <- stringr::str_split_i(
     string = files_run,
     pattern = .Platform$file.sep,
     i = -1
   ) |>
     stringr::str_remove(pattern = paste(".", ext, sep = ""))
 
-  data
+  .data
 }
 
 #' @title ingest_olink_data
@@ -104,9 +104,9 @@ ingest_olink_data <- function(directory) {
 #' @description Read in the manifest of samples for an Olink run \
 #'
 #' @param directory path to where Olink run manifest. Manifest MUST BE in excel format
-#' and MUST HAVE a `sample_id` and `project` columns.
+#' and MUST HAVE a `SampleID` and `project` columns.
 #' @param manifest_sheet Name of the sheet in the excel file containing the relevant sample information
-#' @param sample_column Name of column containing sample names that matches the values in `SampleID` in the Olink output. Default = `"sample_id"`
+#' @param sample_column Name of column containing sample names that matches the values in `SampleID` in the Olink output. Default = `"SampleID"`
 #' @param project_column Name of the column containing the name of the project the sample is associated with. Default = `"project"`
 #' @param ... not currently used
 #'
@@ -116,8 +116,8 @@ ingest_olink_data <- function(directory) {
 #'
 ingest_manifest <- function(
   directory,
-  sample_column = "sample_id",
-  project_column = "project",
+  sample_column = "SampleID",
+  project_column = "Project",
   manifest_sheet = "ManifestBuilder",
   ...
 ) {
@@ -134,21 +134,34 @@ ingest_manifest <- function(
 
 #' @title multifile_write
 #' @description Write multiple files into a list and name them based on the file name without file extension
+#' @details `multifile_write` encapsulates `ingest_olink_data` and `ingest_manifest` along with creating the directory
+#' structure matching that as defined in the OlinkHT Standard Data Package, e.g.
+#' ```
+#'  .
+#'  └── SDP/
+#'     ├── Level_1/
+#'     │   ├── plate1.parquet
+#'     │   ├── plate2.parquet
+#'     │   └── manifest.xlsx
+#'     ├── Level_2
+#'     └── code
+#' ```
 #'
 #' @param data A named list of [`tibble::tibble`]
 #' @param file_extension Output type: `"parquet"` or `"csv"` (default `"parquet"`)
+#' @param proj_dir path to where the files should be saved in the standard data package output format
 #'
 #' @importFrom purrr imap
 #' @importFrom arrow write_parquet
 #' @importFrom readr write_csv
 #' @importFrom stringr str_glue
 #'
-#' @returns Nothing
+#' @returns None
 #'
 #' @export
 #' @examples
 multifile_write <- function(
-  data,
+  .data,
   file_extension = c("parquet", "csv"),
   proj_dir = NULL
 ) {
@@ -163,7 +176,7 @@ multifile_write <- function(
 
   if (file_extension == "parquet") {
     purrr::iwalk(
-      .x = data,
+      .x = .data,
       .f = \(x, name) {
         arrow::write_parquet(
           x,
@@ -173,7 +186,7 @@ multifile_write <- function(
     )
   } else if (file_extension == "csv") {
     purrr::iwalk(
-      .x = data,
+      .x = .data,
       .f = \(x, name) {
         readr::write_csv(
           x = x,
@@ -186,7 +199,8 @@ multifile_write <- function(
 
 
 #' @title Olink_Reader
-#' @description Setup `"directory"` according to the project format described in the Olink data standards
+#' @description Setup project directory and import Olink data and manifest
+#' @detail Setup `"directory"` according to the project format described in the Olink data standards
 #' document, and then read both parquet files and manfests
 #' and reads them into a list format
 #'
@@ -198,7 +212,12 @@ multifile_write <- function(
 #'
 #' @export
 #' @examples
-Olink_Reader <- function(directory) {
+Olink_Reader <- function(
+  directory,
+  sample_column = NULL,
+  project_column = NULL,
+  manifest_sheet = 1
+) {
   # Defining the directory all Olink data is stored in
 
   # make sub-directory for SDP hiearchical file structure
@@ -215,7 +234,14 @@ Olink_Reader <- function(directory) {
 
   # Return parquet files
   list(
-    data = ingest_olink_data(directory),
-    manifest = ingest_manifest(directory)
+    data = ingest_olink_data(
+      directory
+    ),
+    manifest = ingest_manifest(
+      directory,
+      sample_column = sample_column,
+      project_column = project_column,
+      manifest_sheet = manifest_sheet
+    )
   )
 }

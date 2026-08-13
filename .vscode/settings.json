@@ -1,0 +1,12 @@
+{
+  "positron.r.customBinaries": [
+    "/usr/local/bin/R",
+    "/Users/milo/.uvr/r-versions/4.6.1/bin/R"
+  ],
+  "positron.r.customRootFolders": [
+    "/Users/milo/.uvr/r-versions"
+  ],
+  "positron.r.interpreters.default": "/Users/milo/.uvr/r-versions/4.6.1/bin/R",
+  "r.rpath.mac": "/Users/milo/.uvr/r-versions/4.6.1/bin/R",
+  "r.rterm.mac": "/Users/milo/.uvr/r-versions/4.6.1/bin/R"
+}

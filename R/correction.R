@@ -48,7 +48,7 @@ global_ref <- function(data) {
 #'
 #' @returns
 #'
-#' @importFrom dplyr left_join select mutate c_across transmute rowwise
+#' @importFrom dplyr left_join select mutate c_across transmute rowwise join_by
 #' @importFrom purrr map map2 reduce
 #' @importFrom tidyselect contains
 #'
@@ -59,7 +59,7 @@ median_correction <- function(data, meds) {
   ref_med <-
     purrr::reduce(
       .x = meds,
-      .f = \(x, y) dplyr::left_join(x, y, by = "OlinkID")
+      .f = \(x, y) dplyr::left_join(x, y, by = dplyr::join_by(OlinkID))
     ) |> # left join all the run median and variance per each run
     # calculate the mean of all medians to scale by
     # and make a tibble that contains the OlinkID and the reference median
@@ -73,17 +73,17 @@ median_correction <- function(data, meds) {
     purrr::map(
       .x = meds,
       .f = \(x) {
-        dplyr::left_join(x = x, y = ref_med) |>
+        dplyr::left_join(x = x, y = ref_med, by = dplyr::join_by(OlinkID)) |>
           dplyr::mutate(Correction = Median - ReferenceMedian)
       }
     )
 
   data_correction <-
     purrr::map2(
-      .x = exdata,
+      .x = data,
       .y = meds_correction,
       .f = \(x, y) {
-        dplyr::left_join(x = x, y = y, by = "OlinkID") |>
+        dplyr::left_join(x = x, y = y, by = dplyr::join_by(OlinkID)) |>
           dplyr::mutate(ExtNPX_Corrected = ExtNPX - Correction)
       }
     )

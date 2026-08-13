@@ -1,3 +1,7 @@
+# TODO: I don't think any of these functions should have a side effect
+# where they save a file. Since these all are saving the same data
+# that they return, we just yank that and put it into a new file
+
 #' olink_lvl1
 #' Level 1 QC
 #'
@@ -9,6 +13,7 @@
 #' @param PCLot_info Lot number for Plate Control used for the Olink Explore HT run
 #' @param SCLot_info Unknown
 #' @param NCLot_info Lot number for Negative Control used for Olink Explore HT run
+#' @param proj_dir path to where the files should be saved in the standard data package output format
 #'
 #' @returns
 #'
@@ -24,8 +29,11 @@ Olink_lvl1 <- function(
   KitLot_info,
   PCLot_info,
   SCLot_info,
-  NCLot_info
+  NCLot_info,
+  proj_dir = NULL
 ) {
+  proj_dir <- proj_dir %||% getwd()
+
   names <- names(olink_files[["data"]]) # get the names of all the files aka list names
   # store in the standard control names in the SampleID column
   ctrls <- c(
@@ -40,12 +48,20 @@ Olink_lvl1 <- function(
     "SC2",
     "SC3"
   )
+  # as far as I can tell, there should only be one manifest at a time
+  # so why it is a named list and we have to iterate through it seems pointless?
+  # and can cause issues, e.g. trying to map a single entry results in a "can't do this
+  # to a character vector" error
   manifest_filtered <-
     purrr::map(
       .x = olink_files[["manifest"]],
       .f = \(x) dplyr::filter(x, Project %in% proj_names)
     ) # filter the manifest file by the project names first
-  multifile_write(data = manifest_filtered, file_extension = "csv") # write the SMDs
+  multifile_write(
+    .data = manifest_filtered,
+    file_extension = "csv",
+    proj_dir = proj_dir
+  ) # write the SMDs
 
   # filter the current raw data by only selecting the sample only pertaining to the project names
   data_filtered <-
@@ -54,11 +70,11 @@ Olink_lvl1 <- function(
       .f = \(x) {
         dplyr::filter(
           olink_files[["data"]][[x]],
-          SampleID %in% c(ctrls, manifest_filtered[[x]][["sample_id"]])
+          SampleID %in% c(ctrls, manifest_filtered[[1]][["SampleID"]])
         ) |>
           dplyr::left_join(
-            olink_files[["manifest"]][[x]],
-            by = dplyr::join_by("SampleID" == "sample_id")
+            olink_files[["manifest"]][[1]],
+            by = dplyr::join_by("SampleID" == "SampleID")
           ) |>
           dplyr::mutate(
             KitLot = KitLot_info,
@@ -71,7 +87,11 @@ Olink_lvl1 <- function(
       }
     ) # filter only the sample IDs belongs to the projects
   names(data_filtered) <- names
-  multifile_write(data = data_filtered, file_extension = "parquet") # write the Level 1 parquet
+  multifile_write(
+    .data = data_filtered,
+    file_extension = "parquet",
+    proj_dir = proj_dir
+  ) # write the Level 1 parquet
 
   list(
     data = data_filtered,
@@ -92,9 +112,9 @@ Olink_lvl1 <- function(
 #' @importFrom dplyr filter group_by tally ungroup
 #' @export
 #' @examples
-Olink_qc <- function(data) {
+Olink_qc <- function(.data) {
   table_assay <-
-    data |>
+    .data |>
     dplyr::filter(AssayType == "assay") |> # filter for only assays instead of all extension, plate controls
     dplyr::group_by(PlateID, OlinkID, AssayQC) |> # group by PlateID and OlinkID to get the split among the Assay QC
     dplyr::tally() |> # tabulate the counts
@@ -103,7 +123,7 @@ Olink_qc <- function(data) {
     dplyr::tally()
 
   table_sample <-
-    data |>
+    .data |>
     dplyr::filter(SampleType == "SAMPLE") |> # filter for only assays instead of all extension, plate controls
     dplyr::group_by(PlateID, SampleID, SampleQC) |> # group by PlateID and OlinkID to get the split among the Assay QC
     dplyr::tally() |> # tabulate the counts
@@ -119,22 +139,22 @@ Olink_qc <- function(data) {
 #' @title Olink_lvl2_prep
 #' @description
 #'
-#' @param data
+#' @param data a [`tibble`][`tibble::tibble`] containing batch-corrected Olink data
 #'
-#' @returns
+#' @returns [`tibble::tibble`]
 #'
 #' @importFrom dplyr mutate filter group_by summarise case_when select left_join
 #' @export
 #' @examples
-Olink_lvl2_prep <- function(data) {
-  data <-
-    data |>
+Olink_lvl2_prep <- function(.data) {
+  .data <-
+    .data |>
     dplyr::mutate(
       LogProtExp = ExtNPX_Corrected + log2(1e5), # transform into LogProExp
       LogProtExp_Raw = ExtNPX_Corrected + log2(1e5) # transform into LogProExp
     )
 
-  ht_nc_vals <- data |>
+  ht_nc_vals <- .data |>
     dplyr::filter(SampleType == "NEGATIVE_CONTROL") |>
     dplyr::group_by(Assay, OlinkID) |>
     dplyr::summarise(
@@ -144,7 +164,7 @@ Olink_lvl2_prep <- function(data) {
     )
 
   # Calculating Plate Control coefficient of variance
-  ht_pc_vals <- data |>
+  ht_pc_vals <- .data |>
     dplyr::filter(SampleType == "PLATE_CONTROL") |>
     dplyr::group_by(Assay, OlinkID) |>
     dplyr::summarise(
@@ -154,14 +174,14 @@ Olink_lvl2_prep <- function(data) {
     dplyr::mutate(
       high_var_assay = dplyr::case_when(
         pc_cv > 20 ~ "High Variance",
-        T ~ "Pass"
+        TRUE ~ "Pass"
       )
     ) |>
     dplyr::select(-pc_cv)
 
   # This is the "sample level" qc, calculates ith sample in jth assay that needs to be replaced with zero or LLOQ
   # also labels those values in a new column - sample_level_qc
-  data |>
+  .data |>
     dplyr::filter(SampleType == "SAMPLE") |>
     dplyr::left_join(ht_nc_vals, by = c("Assay", "OlinkID")) |>
     dplyr::left_join(ht_pc_vals, by = c("Assay", "OlinkID")) |>
@@ -184,38 +204,39 @@ Olink_lvl2_prep <- function(data) {
 #' @title Olink_lvl2
 #' @description Level 2 QC Part 2
 #'
-#' @param data
-#' @param multifile
+#' @param data tibble or list of tibbles
+#' @param multifile bool
+#' @param proj_dir path to save to
 #'
 #' @returns
 #'
-#' @importFrom dplyr group_by summarise mutate case_when select left_join
+#' @importFrom dplyr group_by summarise mutate case_when select left_join n_distinct n
 #' @importFrom tidyr pivot_wider
 #' @importFrom arrow write_parquet
+#' @importFrom purrr list_rbind
 #'
 #' @export
 #' @examples
-Olink_lvl2 <- function(data, multifile = TRUE) {
-  # concatenate all the data together
+Olink_lvl2 <- function(.data, multifile = TRUE, proj_dir = NULL) {
+  proj_dir <- proj_dir %||% getwd()
+
+  # concatenate the data
   if (multifile) {
-    data <- Reduce(
-      f = \(x, y) rbind(x, y),
-      x = data
-    )
+    .data <- purrr::list_rbind(.data)
   }
 
   # specifying number of samples present in the total combined dataset
-  n_samples <- data |>
-    dplyr::group_by(SampleID) |>
-    dplyr::summarise() |>
-    nrow()
+  n_samples <- .data |> dplyr::select(SampleID) |> dplyr::n_distinct()
 
   # Assay level QC - if 50% of samples are below LLOQ, labeled as semi-continuous
   # if 75% of samples are below LLOD, labeled as categorical
   # Test to adjust how I calculate categorical, semi-continuous, or continuous
-  ht_scaled_npx_assay <- data |>
+  ht_scaled_npx_assay <- .data |>
     dplyr::group_by(Assay, OlinkID, sample_level_qc) |>
-    dplyr::summarise(percentage = 100 * n() / n_samples, .groups = 'drop') |>
+    dplyr::summarise(
+      percentage = 100 * dplyr::n() / n_samples,
+      .groups = 'drop'
+    ) |>
     tidyr::pivot_wider(
       names_from = sample_level_qc,
       values_from = percentage
@@ -241,11 +262,17 @@ Olink_lvl2 <- function(data, multifile = TRUE) {
     dplyr::select(-c(`Below LLOD`, `Below LLOQ`))
 
   data <- dplyr::left_join(
-    data,
+    .data,
     dplyr::select(ht_scaled_npx_assay, OlinkID, assay_level_qc),
-    by = "OlinkID"
+    by = dplyr::join_by(OlinkID)
   )
-
-  arrow::write_parquet(data, sink = paste0("SDP/Level_2/Level 2 SDP.parquet")) # write the parquet files of the level 2
+  lvl2_output_dir <- stringr::str_glue("{proj_dir}/SDP/Level_2/")
+  if (!lvl2_output_dir %in% list.dirs(proj_dir, recursive = TRUE)) {
+    dir.create(path = lvl2_output_dir, recursive = TRUE)
+  }
+  arrow::write_parquet(
+    data,
+    sink = stringr::str_glue("{lvl2_output_dir}/Level_2_SDP.parquet")
+  ) # write the parquet files of the level 2
   data
 }

@@ -31,8 +31,11 @@ library(arrow)
 library(flextable)
 library(here)
 library(olinkqc)
+```
 
-
+```{r}
+#| label: load files
+#| include: false
 level_1_files <- lapply(
   list.files(
     path = params$level_1_file_path,

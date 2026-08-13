@@ -11,7 +11,8 @@ Olink_lvl1(
   KitLot_info,
   PCLot_info,
   SCLot_info,
-  NCLot_info
+  NCLot_info,
+  proj_dir = NULL
 )
 }
 \arguments{
@@ -30,6 +31,8 @@ Olink_lvl1(
 \item{SCLot_info}{Unknown}
 
 \item{NCLot_info}{Lot number for Negative Control used for Olink Explore HT run}
+
+\item{proj_dir}{path to where the files should be saved in the standard data package output format}
 }
 \description{
 olink_lvl1

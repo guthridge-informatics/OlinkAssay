@@ -8,9 +8,8 @@ generate_performance_report(
   project_name,
   correction_procedure,
   sdp_directory,
-  report_name = "assay_performance_report.pdf",
-  template_dir =
-    "\\\\\\\\data/ADI/Phenotyping_Core/01_Instrumentation/Olink_HT/02_Analysis_Projects/Olink_HT_QC/Olink_HT"
+  output_dir,
+  report_name = "assay_performance_report.pdf"
 )
 }
 \description{

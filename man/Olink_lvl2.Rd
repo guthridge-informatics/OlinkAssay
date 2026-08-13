@@ -4,7 +4,14 @@
 \alias{Olink_lvl2}
 \title{Olink_lvl2}
 \usage{
-Olink_lvl2(data, multifile = TRUE)
+Olink_lvl2(.data, multifile = TRUE, proj_dir = NULL)
+}
+\arguments{
+\item{multifile}{bool}
+
+\item{proj_dir}{path to save to}
+
+\item{data}{tibble or list of tibbles}
 }
 \description{
 Level 2 QC Part 2

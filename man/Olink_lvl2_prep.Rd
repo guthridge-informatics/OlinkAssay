@@ -4,7 +4,13 @@
 \alias{Olink_lvl2_prep}
 \title{Olink_lvl2_prep}
 \usage{
-Olink_lvl2_prep(data)
+Olink_lvl2_prep(.data)
+}
+\arguments{
+\item{data}{a \code{\link[tibble:tibble]{tibble}} containing batch-corrected Olink data}
+}
+\value{
+\code{\link[tibble:tibble]{tibble::tibble}}
 }
 \description{
 Olink_lvl2_prep

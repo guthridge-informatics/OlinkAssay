@@ -4,7 +4,13 @@
 \alias{.reader_func}
 \title{multifile_read}
 \usage{
-.reader_func(directory, file_extension = c("parquet", "excel"))
+.reader_func(
+  directory,
+  file_extension = c("parquet", "excel"),
+  sample_column = NULL,
+  project_column = NULL,
+  manifest_sheet = 1
+)
 }
 \arguments{
 \item{directory}{path to where the individual Olink run data can be found}

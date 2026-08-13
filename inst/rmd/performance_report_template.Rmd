@@ -38,7 +38,7 @@ level_1_files <- lapply(list.files(params$level_1_file_path,
 
 # level_2_files <- arrow::read_parquet(here::here("SDP", 
 # "Level_2", 
-# "Level 2 SDP.parquet"))
+# "Level_2_SDP.parquet"))
 
 level_2_files <- arrow::read_parquet(list.files(params$level_2_file_path,
                                    pattern = "parquet",

@@ -21,6 +21,7 @@ export(optimize_min_dist)
 export(optimize_n_neighbor)
 export(optimize_spread)
 export(pca_to_umap)
+export(plot_qc)
 export(vst_to_pca)
 importFrom(arrow,
   read_parquet,
@@ -30,24 +31,35 @@ importFrom(cowplot,plot_grid)
 importFrom(dbscan,sNNclust)
 importFrom(dplyr,
   across,
+  arrange,
+  c_across,
   case_when,
-  contains,
   filter,
   group_by,
+  if_else,
   join_by,
   left_join,
   mutate,
+  n,
+  n_distinct,
   rename,
+  row_number,
+  rowwise,
   select,
   summarise,
   summarize,
   tally,
+  transmute,
   ungroup
 )
 importFrom(ggplot2,
   aes,
+  coord_polar,
   element_blank,
   element_text,
+  facet_wrap,
+  geom_bar,
+  geom_histogram,
   geom_point,
   geom_segment,
   geom_smooth,
@@ -57,26 +69,35 @@ importFrom(ggplot2,
   ggtitle,
   guide_legend,
   guides,
+  labs,
+  scale_fill_manual,
+  scale_x_continuous,
+  scale_y_continuous,
+  stat_bin,
   theme,
   theme_classic,
-  theme_void
+  theme_void,
+  vars
 )
+importFrom(ggrepel,geom_label_repel)
 importFrom(grid,
   arrow,
   unit
 )
-importFrom(magrittr,`%>%`)
 importFrom(pathviewr,find_curve_elbow)
 importFrom(purrr,
   imap,
+  list_rbind,
   map,
-  map2
+  map2,
+  reduce
 )
 importFrom(readr,
   read_csv,
   write_csv
 )
 importFrom(readxl,read_excel)
+importFrom(rmarkdown,render)
 importFrom(stats,prcomp)
 importFrom(stringr,
   str_glue,
@@ -85,5 +106,8 @@ importFrom(stringr,
 )
 importFrom(tibble,as_tibble)
 importFrom(tidyr,pivot_wider)
-importFrom(tidyselect,where)
+importFrom(tidyselect,
+  contains,
+  where
+)
 importFrom(uwot,umap)

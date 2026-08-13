@@ -4,13 +4,28 @@
 \alias{ingest_manifest}
 \title{ingest_manifest}
 \usage{
-ingest_manifest(directory)
+ingest_manifest(
+  directory,
+  sample_column = "SampleID",
+  project_column = "Project",
+  manifest_sheet = "ManifestBuilder",
+  ...
+)
 }
 \arguments{
-\item{directory}{path to where Olink run manifest}
+\item{directory}{path to where Olink run manifest. Manifest MUST BE in excel format
+and MUST HAVE a \code{SampleID} and \code{project} columns.}
+
+\item{sample_column}{Name of column containing sample names that matches the values in \code{SampleID} in the Olink output. Default = \code{"SampleID"}}
+
+\item{project_column}{Name of the column containing the name of the project the sample is associated with. Default = \code{"project"}}
+
+\item{manifest_sheet}{Name of the sheet in the excel file containing the relevant sample information}
+
+\item{...}{not currently used}
 }
 \value{
-A named list of tibbles
+A named list of \code{\link[tibble:tibble]{"tibbles"}}
 }
 \description{
 

@@ -4,16 +4,32 @@
 \alias{multifile_write}
 \title{multifile_write}
 \usage{
-multifile_write(data, file_extension = c("parquet", "csv"))
+multifile_write(.data, file_extension = c("parquet", "csv"), proj_dir = NULL)
 }
 \arguments{
-\item{data}{A named list of \link[tibble:tibble]{tibble::tibble}}
-
 \item{file_extension}{Output type: \code{"parquet"} or \code{"csv"} (default \code{"parquet"})}
+
+\item{proj_dir}{path to where the files should be saved in the standard data package output format}
+
+\item{data}{A named list of \code{\link[tibble:tibble]{tibble::tibble}}}
 }
 \value{
-Nothing
+None
 }
 \description{
 Write multiple files into a list and name them based on the file name without file extension
+}
+\details{
+\code{multifile_write} encapsulates \code{ingest_olink_data} and \code{ingest_manifest} along with creating the directory
+structure matching that as defined in the OlinkHT Standard Data Package, e.g.
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{ .
+ └── SDP/
+    ├── Level_1/
+    │   ├── plate1.parquet
+    │   ├── plate2.parquet
+    │   └── manifest.xlsx
+    ├── Level_2
+    └── code
+}\if{html}{\out{</div>}}
 }

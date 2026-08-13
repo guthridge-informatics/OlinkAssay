@@ -4,7 +4,12 @@
 \alias{Olink_Reader}
 \title{Olink_Reader}
 \usage{
-Olink_Reader(directory)
+Olink_Reader(
+  directory,
+  sample_column = NULL,
+  project_column = NULL,
+  manifest_sheet = 1
+)
 }
 \arguments{
 \item{directory}{project directory to which \code{"code"}, \code{"level 1"}, and \code{"level 2"} files should be
@@ -14,7 +19,5 @@ written and where the output from NPXExplorer and the sample manifests can be fo
 list with \code{"data"} containing a list of \code{\link[tibble:tibble]{tibbles}}
 }
 \description{
-Setup \code{"directory"} according to the project format described in the Olink data standards
-document, and then read both parquet files and manfests
-and reads them into a list format
+Setup project directory and import Olink data and manifest
 }
