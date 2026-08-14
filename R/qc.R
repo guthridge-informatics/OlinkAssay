@@ -221,7 +221,7 @@ Olink_lvl2 <- function(.data, multifile = TRUE, proj_dir = NULL) {
   proj_dir <- proj_dir %||% getwd()
 
   # concatenate the data
-  if (multifile) {
+  if (is.list(.data)) {
     .data <- purrr::list_rbind(.data)
   }
 

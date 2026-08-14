@@ -383,10 +383,11 @@ graph_UMAP <- function(
   ) +
     ggplot2::geom_point(mapping = aes(color = as.factor(groups)), size = 0.5) +
     ggplot2::theme_void()
-  # y-range
-  yrange <- layer_scales(p)$y$range$range
-  # x-range
-  xrange <- layer_scales(p)$x$range$range
+  layer_data <- ggplot2::get_layer_data(p)
+  y_min <- min(layer_data[["y"]])
+  y_max <- max(layer_data[["y"]])
+  x_min <- min(layer_data[["x"]])
+  x_max <- max(layer_data[["x"]])
   p +
     ggplot2::theme(legend.title = ggplot2::element_blank()) +
     ggplot2::geom_segment(
@@ -439,7 +440,7 @@ graph_UMAP <- function(
     ggplot2::ggtitle(label = "")
 }
 
-#' @title plot_Qc
+#' @title plot_qc
 #' @description graph the QC performance of each plate
 #'
 #' @param data_i
@@ -452,14 +453,14 @@ graph_UMAP <- function(
 #'
 #' @export
 #' @examples
-plot_qc <- function(data_i) {
-  plateID1 <- data_i[["AssayOlinkQC"]] |>
+plot_qc <- function(.data) {
+  plateID1 <- .data[["AssayOlinkQC"]] |>
     dplyr::select(PlateID) |>
     dplyr::filter(dplyr::row_number() == 1) |>
     unique()
 
   plot <-
-    data_i[["AssayOlinkQC"]] |>
+    .data[["AssayOlinkQC"]] |>
     dplyr::filter(PlateID == plateID1[["PlateID"]]) |>
     dplyr::arrange(n) |>
     dplyr::mutate(
@@ -472,7 +473,7 @@ plot_qc <- function(data_i) {
     ggplot2::coord_polar("y", start = 0) +
     ggplot2::theme_void() +
     ggplot2::theme(legend.position = "none") +
-    ggplot2::geom_label_repel(
+    ggrepel::geom_label_repel(
       ggplot2::aes(y = ypos, label = paste0(AssayQC, "=", n)),
       size = 4,
       nudge_x = 0.1,
@@ -481,7 +482,7 @@ plot_qc <- function(data_i) {
     ggplot2::scale_fill_manual(values = c("green4", "yellow2", "red"))
 
   plot_hist <-
-    data_i[["SampleOlinkQC"]] |>
+    .data[["SampleOlinkQC"]] |>
     ggplot2::ggplot(mapping = ggplot2::aes(x = Frequency, fill = PlateID)) +
     ggplot2::geom_histogram(
       color = "white",
@@ -495,7 +496,7 @@ plot_qc <- function(data_i) {
         label = dplyr::if_else(
           condition = ggplot2::after_stat(count) == 0,
           true = "",
-          false = ggplot2::after_stat(count)
+          false = as.character(ggplot2::after_stat(count))
         )
       ),
       vjust = -0.3,
@@ -505,7 +506,7 @@ plot_qc <- function(data_i) {
       labels = scales::percent,
       limits = c(-0.05, 1)
     ) +
-    ggplot2::scale_y_continuous(expand = expansion(mult = c(0, 0.2))) +
+    ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = c(0, 0.2))) +
     ggplot2::labs(
       x = "% analytes failed",
       y = "Number of samples"
@@ -514,4 +515,118 @@ plot_qc <- function(data_i) {
     ggplot2::facet_wrap(ggplot2::vars(PlateID))
 
   cowplot::plot_grid(plotlist = list(plot, plot_hist), nrow = 2)
+}
+
+
+#' @title batch_correction_umap_prep
+#' @description Prepare a UMAP graph from level 2 data to examine the success or failure of batch correction
+#'
+#' @param .data [`tibble`][`tibble::tibble`] containing the level 2 data
+#' @param .col column to use for expression data. One of `"ExtNPX"`, `"ExtNPX_Corrected"`, `"LogProtExp_Raw"`.
+#' @param exclude_high_variance_assays should high variance assays be included when calculating the UMAP?
+#' Default: FALSE
+#' @param title title to add to plot
+#'
+#' @returns A ggproto object (e.g. the plot object)
+#'
+#' @export
+#' @examples
+batch_correction_umap_prep <- function(
+  .data,
+  .col = c("ExtNPX", "ExtNPX_Corrected", "LogProtExp_Raw"),
+  exclude_high_variance_assays = FALSE,
+  title = NULL
+) {
+  .col <- match.arg(.col)
+  .col <- rlang::sym(.col)
+
+  if (exclude_high_variance_assays) {
+    umap_intermediate <-
+      dplyr::filter(
+        .data = .data,
+        SampleType == "SAMPLE",
+        Project != "Bridge",
+        AssayType == "assay",
+        high_var_assay != "High Variance"
+      )
+  } else {
+    umap_intermediate <-
+      dplyr::filter(
+        .data = .data,
+        SampleType == "SAMPLE",
+        Project != "Bridge",
+        AssayType == "assay"
+      )
+  }
+
+  umap_intermediate <-
+    umap_intermediate |>
+    dplyr::mutate(
+      PlateID = stringr::str_split_i(
+        PlateID,
+        pattern = "_",
+        i = 1
+      ),
+      ProteinID = glue::glue("{Assay}-{OlinkID}")
+    ) |>
+    dplyr::select(
+      UniqueID,
+      SampleID,
+      PlateID,
+      WellID,
+      {{ .col }},
+      ProteinID
+    ) |>
+    # dplyr::mutate(LogProtExp_Raw = batch_corrected + log2(1e5)) |>
+    tidyr::pivot_wider(
+      id_cols = c(
+        UniqueID,
+        SampleID,
+        PlateID,
+        WellID
+      ),
+      names_from = ProteinID,
+      values_from = {{ .col }}
+    )
+
+  p <- umap_intermediate |>
+    dplyr::select(
+      tidyselect::where(
+        fn = \(x) {
+          all(is.numeric(x) && !(any(is.na(x))))
+        }
+      )
+    ) |>
+    uwot::umap(
+      scale = TRUE,
+      min_dist = 0.4,
+      seed = 825
+    ) |>
+    tibble::as_tibble(.name_repair = "universal_quiet") |>
+    dplyr::rename(
+      UMAP1 = `...1`,
+      UMAP2 = `...2`
+    ) |>
+    dplyr::mutate(
+      PlateID = umap_intermediate[["PlateID"]],
+      SampleID = umap_intermediate[["SampleID"]]
+    ) |>
+    ggplot2::ggplot(ggplot2::aes(
+      x = UMAP1,
+      y = UMAP2,
+      color = PlateID
+    )) +
+    ggplot2::geom_point(size = 3) +
+    ggplot2::theme_minimal() +
+    ggplot2::theme(
+      legend.text = ggplot2::element_text(face = "bold", size = 12),
+      legend.title = ggplot2::element_blank(),
+      axis.title = ggplot2::element_text(size = 12)
+    )
+
+  if (!is.null(title)) {
+    p + ggplot2::ggtitle(title)
+  } else {
+    p
+  }
 }

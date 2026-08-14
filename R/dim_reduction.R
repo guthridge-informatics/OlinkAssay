@@ -3,7 +3,7 @@
 #' @title vst_to_pca
 #' @description Use variance stabilized data to detect variables/analytes with above expected variances
 #'
-#' @param data A sample-by-assay [`base::data.frame`] or [`tibble::tibble`] with variance-stablized data
+#' @param .data A sample-by-assay [`base::data.frame`] or [`tibble::tibble`] with variance-stablized data
 #' @param exclude Assays to ignore when calculating the PCA
 #'
 #' @returns list with:
@@ -16,15 +16,15 @@
 #'
 #' @export
 #' @examples
-vst_to_pca <- function(data, exclude = NULL) {
+vst_to_pca <- function(.data, exclude = NULL) {
   # data excludes the categorical columns that will not be used for the vst process
-  data <- dplyr::select(data, -tidyselect(all_of(exclude)))
+  .data <- dplyr::select(.data, -tidyselect(all_of(exclude)))
 
   # calculate assay mean and variance
-  if (tibble::is_tibble(data)) {
+  if (tibble::is_tibble(.data)) {
     # mean <- apply(X = data, MARGIN = 2, FUN = \(x) mean(unlist(x)))
     data_vst <-
-      data |>
+      .data |>
       tidyr::pivot_longer(
         cols = tidyselect::where(is.numeric),
         names_to = "Assay"
@@ -33,9 +33,9 @@ vst_to_pca <- function(data, exclude = NULL) {
       dplyr::summarise(Mean = mean(value), Variance = var(value))
   } else {
     data_vst <- tibble::tibble(
-      Assay = colnames(data),
-      Mean = colMeans(x = data),
-      Variance = colMeans(x = data)
+      Assay = colnames(.data),
+      Mean = colMeans(x = .data),
+      Variance = colMeans(x = .data)
     )
   }
 
@@ -89,9 +89,9 @@ vst_to_pca <- function(data, exclude = NULL) {
 #'
 #' @export
 #' @examples
-pca_to_umap <- function(data) {
+pca_to_umap <- function(.data) {
   # calculate the principal components
-  pca <- prcomp(na.omit(data), scale. = TRUE, center = TRUE)
+  pca <- prcomp(na.omit(.data), scale. = TRUE, center = TRUE)
   # get PCA importance from the principal component analysis
   res_pca <- summary(pca)$importance |>
     t() |>

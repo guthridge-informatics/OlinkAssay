@@ -2,9 +2,9 @@
 % Please edit documentation in R/graph.R
 \name{plot_qc}
 \alias{plot_qc}
-\title{plot_Qc}
+\title{plot_qc}
 \usage{
-plot_qc(data_i)
+plot_qc(.data)
 }
 \description{
 graph the QC performance of each plate

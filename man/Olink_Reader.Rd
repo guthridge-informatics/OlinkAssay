@@ -5,19 +5,41 @@
 \title{Olink_Reader}
 \usage{
 Olink_Reader(
-  directory,
+  input,
+  output,
+  manifest_sheet = 1,
   sample_column = NULL,
-  project_column = NULL,
-  manifest_sheet = 1
+  project_column = NULL
 )
 }
 \arguments{
-\item{directory}{project directory to which \code{"code"}, \code{"level 1"}, and \code{"level 2"} files should be
+\item{input}{project directory to which \code{"code"}, \code{"level 1"}, and \code{"level 2"} files should be
 written and where the output from NPXExplorer and the sample manifests can be found}
+
+\item{output}{path to where the standard data package directory structure should be setup and files written to}
+
+\item{manifest_sheet}{Name of the sheet in the excel file containing the relevant sample information. Default: the first sheet.}
+
+\item{sample_column}{Name of column containing sample names that matches the values in \code{SampleID} in the Olink output. Default = \code{"SampleID"}}
+
+\item{project_column}{Name of the column containing the name of the project the sample is associated with. Default = \code{"project"}}
 }
 \value{
-list with \code{"data"} containing a list of \code{\link[tibble:tibble]{tibbles}}
+list with
+\itemize{
+\item \code{"data"}: a list of \code{\link[tibble:tibble]{tibbles}} with the Olink data
+\item \code{"manifest"}: a \code{\link[tibble:tibble]{tibble}} with manifest information
+}
 }
 \description{
 Setup project directory and import Olink data and manifest
+}
+\examples{
+Olink_Reader(
+   input = "path/to/folder/with/manifest/and/parquet/files",
+   output = "path/to/output",
+   manifest_sheet = "manifest",
+   sample_column = "Tube ID",
+   project_column = "Project"
+)
 }

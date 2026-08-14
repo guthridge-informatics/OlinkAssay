@@ -1,5 +1,3 @@
-# TODO: replace rmarkdown with quarto
-
 #' @title generate_performance_report
 #'
 #' @param project_name
@@ -10,7 +8,8 @@
 #'
 #' @returns
 #'
-#' @importFrom rmarkdown render
+#' @importFrom quarto quarto_render
+#' @importFrom withr local_tempfile
 #'
 #' @export
 #' @examples
@@ -21,17 +20,10 @@ generate_performance_report <- function(
   output_dir,
   report_name = "assay_performance_report.pdf"
 ) {
-  # Construct commonly used paths
-
   template_file <- system.file(
-    "rmd",
-    "performance_report_template.Rmd",
+    "qmd",
+    "performance_report_template.qmd",
     package = "olinkqc"
-  )
-
-  output_pdf <- file.path(
-    sdp_directory,
-    report_name
   )
 
   level_1_path <- file.path(
@@ -44,32 +36,39 @@ generate_performance_report <- function(
     "Level_2"
   )
 
+  tmp_path <- withr::local_tempfile()
+
+  tmp_template_file <- glue::glue(
+    "{tmp_path}{.Platform[['file.sep']]}performance_report_template.qmd"
+  )
+  file.copy(from = template_file, to = tmp_template_file)
+
   # Render report beside the template
-  rmarkdown::render(
-    input = template_file,
-    output_format = "pdf_document",
-    output_dir = output_dir,
-    params = list(
+  quarto::quarto_render(
+    input = tmp_template_file,
+    output_format = "pdf",
+    output_file = "performance_report_template.pdf",
+    execute_params = list(
       project_name = project_name,
       correction_procedure = correction_procedure,
       level_1_file_path = level_1_path,
       level_2_file_path = level_2_path
     ),
-    quiet = TRUE
+    quiet = FALSE
   )
 
-  # Accessing the rendered pdf in the temporary storage location
-  rendered_pdf <- file.path(
-    output_dir,
-    "performance_report_template.pdf"
+  output_report <- glue::glue(
+    "{tmp_path}{.Platform[['file.sep']]}performance_report_template.qmd"
   )
 
-  # Copy finished report to SDP directory
-  # fs::file_copy(
-  #   path = rendered_pdf,
-  #   new_path = output_pdf,
-  #   overwrite = TRUE
-  # )
+  if (file.exists(output_report)) {
+    file.copy(
+      from = output_report,
+      to = glue::glue(
+        "{sdp_directory}{.Platform[['file.sep']]}performance_report.pdf"
+      )
+    )
+  }
 
-  invisible(output_pdf)
+  invisible(output_report)
 }

@@ -4,10 +4,10 @@
 \alias{ingest_olink_data}
 \title{ingest_olink_data}
 \usage{
-ingest_olink_data(directory)
+ingest_olink_data(input)
 }
 \arguments{
-\item{directory}{path to where the individual Olink run data can be found}
+\item{input}{path to where the individual Olink run data can be found}
 }
 \value{
 A named list of tibbles

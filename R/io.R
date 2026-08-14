@@ -2,7 +2,7 @@
 #' @description Read multiple files into a list and name them based on the file
 #' name minus the file extension
 #'
-#' @param directory path to where the individual Olink run data can be found
+#' @param input path to where the individual Olink run data can be found
 #' @param file_extension what kind of file should be loaded: `"parquet"` or `"excel"` (default `"parquet"`)
 #'
 #' @importFrom stringr str_split_i str_remove
@@ -14,7 +14,7 @@
 #' @returns A named list of tibbles
 #'
 .reader_func <- function(
-  directory,
+  input,
   file_extension = c("parquet", "excel"),
   sample_column = NULL,
   project_column = NULL,
@@ -67,7 +67,7 @@
   }
 
   files_run <- list.files(
-    path = directory,
+    path = input,
     pattern = pattern,
     full.names = TRUE
   ) |>
@@ -91,21 +91,21 @@
 #' @title ingest_olink_data
 #' @description Read multiple Olink output files into a list and name them based on the file name
 #'
-#' @param directory path to where the individual Olink run data can be found
+#' @param input path to where the individual Olink run data can be found
 #'
 #' @returns A named list of tibbles
 #' @export
 #'
-ingest_olink_data <- function(directory) {
-  .reader_func(directory, file_extension = "parquet")
+ingest_olink_data <- function(input) {
+  .reader_func(input, file_extension = "parquet")
 }
 
 #' @title ingest_manifest
 #' @description Read in the manifest of samples for an Olink run \
 #'
-#' @param directory path to where Olink run manifest. Manifest MUST BE in excel format
+#' @param input path to where Olink run manifest. Manifest MUST BE in excel format
 #' and MUST HAVE a `SampleID` and `project` columns.
-#' @param manifest_sheet Name of the sheet in the excel file containing the relevant sample information
+#' @param manifest_sheet Name of the sheet in the excel file containing the relevant sample information. Default: the first sheet.
 #' @param sample_column Name of column containing sample names that matches the values in `SampleID` in the Olink output. Default = `"SampleID"`
 #' @param project_column Name of the column containing the name of the project the sample is associated with. Default = `"project"`
 #' @param ... not currently used
@@ -115,14 +115,15 @@ ingest_olink_data <- function(directory) {
 #' @export
 #'
 ingest_manifest <- function(
-  directory,
+  input,
+  output_directory,
   sample_column = "SampleID",
   project_column = "Project",
   manifest_sheet = "ManifestBuilder",
   ...
 ) {
   .reader_func(
-    directory = directory,
+    input = input,
     file_extension = "excel",
     sample_column = sample_column,
     project_column = project_column,
@@ -200,45 +201,67 @@ multifile_write <- function(
 
 #' @title Olink_Reader
 #' @description Setup project directory and import Olink data and manifest
-#' @detail Setup `"directory"` according to the project format described in the Olink data standards
+#' @detail Setup `"input"` according to the project format described in the Olink data standards
 #' document, and then read both parquet files and manfests
 #' and reads them into a list format
 #'
-#' @param directory project directory to which `"code"`, `"level 1"`, and `"level 2"` files should be
+#' @param input project directory to which `"code"`, `"level 1"`, and `"level 2"` files should be
 #' written and where the output from NPXExplorer and the sample manifests can be found
+#' @param output path to where the standard data package directory structure should be setup and files written to
+#' @inheritParams ingest_manifest manifest_sheet sample_column project_column
 #'
 #' @importFrom purrr map
-#' @returns list with `"data"` containing a list of [`tibbles`][`tibble::tibble`]
+#' @returns list with
+#' * `"data"`: a list of [`tibbles`][`tibble::tibble`] with the Olink data
+#' * `"manifest"`: a [`tibble`][`tibble::tibble`] with manifest information
 #'
 #' @export
 #' @examples
+#' Olink_Reader(
+#'    input = "path/to/folder/with/manifest/and/parquet/files",
+#'    output = "path/to/output",
+#'    manifest_sheet = "manifest",
+#'    sample_column = "Tube ID",
+#'    project_column = "Project"
+#' )
 Olink_Reader <- function(
-  directory,
+  input,
+  output,
+  manifest_sheet = 1,
   sample_column = NULL,
-  project_column = NULL,
-  manifest_sheet = 1
+  project_column = NULL
 ) {
   # Defining the directory all Olink data is stored in
 
   # make sub-directory for SDP hiearchical file structure
   purrr::map(
     .x = c(
-      root = paste0(directory, "/SDP"), # root directory for SDP
-      lvl1 = paste0(directory, "/SDP/Level_1"), # level 1 directory for SDP
-      lvl2 = paste0(directory, "/SDP/Level_2"), # level 2 directory for SDP
-      code = paste0(directory, "/SDP/code")
+      root = "SDP", # root directory for SDP
+      lvl1 = "SDP/Level_1", # level 1 directory for SDP
+      lvl2 = "SDP/Level_2", # level 2 directory for SDP
+      code = "SDP/code"
     ),
-    .f = dir.create,
-    recursive = TRUE
+    .f = \(x) {
+      if (!x %in% list.dirs(output, full.names = FALSE)) {
+        dir.create(
+          stringr::str_glue("{output}/{x}"),
+          recursive = TRUE
+        )
+      } else {
+        warning(stringr::str_glue(
+          "An existing {x} directory was found in {output}; potentially overwriting files."
+        ))
+      }
+    }
   )
 
   # Return parquet files
   list(
     data = ingest_olink_data(
-      directory
+      input
     ),
     manifest = ingest_manifest(
-      directory,
+      input,
       sample_column = sample_column,
       project_column = project_column,
       manifest_sheet = manifest_sheet

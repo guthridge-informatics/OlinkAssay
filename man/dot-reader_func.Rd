@@ -5,7 +5,7 @@
 \title{multifile_read}
 \usage{
 .reader_func(
-  directory,
+  input,
   file_extension = c("parquet", "excel"),
   sample_column = NULL,
   project_column = NULL,
@@ -13,7 +13,7 @@
 )
 }
 \arguments{
-\item{directory}{path to where the individual Olink run data can be found}
+\item{input}{path to where the individual Olink run data can be found}
 
 \item{file_extension}{what kind of file should be loaded: \code{"parquet"} or \code{"excel"} (default \code{"parquet"})}
 }

@@ -103,16 +103,16 @@ median_correction <- function(data, meds) {
 #'
 #' @export
 #' @examples
-batch_correction <- function(data, method = c("median", "global median")) {
+batch_correction <- function(.data, method = c("median", "global median")) {
   method <- match.arg(method)
-  if (!is.vector(data)) {
-    data <- list(data)
+  if (!is.vector(.data)) {
+    .data <- list(.data)
   }
   if (method == "median") {
-    meds <- purrr::map(.x = data, .f = ctrl_ref)
+    meds <- purrr::map(.x = .data, .f = ctrl_ref)
   } else if (method == "global median") {
-    meds <- purrr::map(.x = data, .f = global_ref)
+    meds <- purrr::map(.x = .data, .f = global_ref)
   }
 
-  median_correction(data, meds)
+  median_correction(.data, meds)
 }
