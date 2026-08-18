@@ -95,6 +95,9 @@
 #'
 #' @returns A named list of tibbles
 #' @export
+#' @examples
+#' \dontrun{}
+#' ingest_olink_data(input = "/path/to/data")
 #'
 ingest_olink_data <- function(input) {
   .reader_func(input, file_extension = "parquet")
@@ -113,6 +116,9 @@ ingest_olink_data <- function(input) {
 #' @returns A named list of [`"tibbles"`][`tibble::tibble`]
 #'
 #' @export
+#' @examples
+#' \dontrun{}
+#' ingest_manifest(input = "/path/to/data")
 #'
 ingest_manifest <- function(
   input,
@@ -224,7 +230,7 @@ multifile_write <- function(
 #'    sample_column = "Tube ID",
 #'    project_column = "Project"
 #' )
-Olink_Reader <- function(
+olink_Reader <- function(
   input,
   output,
   manifest_sheet = 1,

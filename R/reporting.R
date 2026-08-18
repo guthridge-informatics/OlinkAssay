@@ -1,18 +1,32 @@
 #' @title generate_performance_report
+#' @description Generate a QC performance report for a Olink HT
+#'  project.
 #'
-#' @param project_name
-#' @param correction_procedure
-#' @param sdp_directory
-#' @param report_name
-#' @param template_dir
+#' @param project_name title to give the report
+#' @param correction_procedure description to use in
+#'  the report for the batch correction procedure
+#' @param sdp_directory path to the directory that
+#'  includes the project `Level_1` and `Level_2`
+#'  outputs.
+#' @param output_dir path to where the report should be output
+#' @param report_name name to give the output report
+#' @param template_dir path to the report markdown template
 #'
-#' @returns
+#' @returns Nothing, but writes a PDF named `report_name` to `output_dir`
 #'
-#' @importFrom quarto quarto_render
+#' @importFrom quarto quatorto_render
 #' @importFrom withr local_tempfile
 #'
 #' @export
 #' @examples
+#' \dontrun{}
+#' generate_performance_report(
+#'    project_name = "Volcano Science Project",
+#'    correction_procedure = "median",
+#'    sdp_directory = "/home/user/volcano_project/sdp",
+#'    output_dir = "/home/user/reports",
+#'    report_name = "assay_performance_report.pdf"
+#' )
 generate_performance_report <- function(
   project_name,
   correction_procedure,

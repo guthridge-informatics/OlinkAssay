@@ -4,10 +4,10 @@
 \alias{vst_to_pca}
 \title{vst_to_pca}
 \usage{
-vst_to_pca(data, exclude = NULL)
+vst_to_pca(.data, exclude = NULL)
 }
 \arguments{
-\item{data}{A sample-by-assay \code{\link[base:data.frame]{base::data.frame}} or \code{\link[tibble:tibble]{tibble::tibble}} with variance-stablized data}
+\item{.data}{A sample-by-assay \code{\link[base:data.frame]{base::data.frame}} or \code{\link[tibble:tibble]{tibble::tibble}} with variance-stablized data}
 
 \item{exclude}{Assays to ignore when calculating the PCA}
 }

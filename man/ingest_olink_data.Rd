@@ -15,3 +15,8 @@ A named list of tibbles
 \description{
 Read multiple Olink output files into a list and name them based on the file name
 }
+\examples{
+\dontrun{}
+ingest_olink_data(input = "/path/to/data")
+
+}

@@ -23,7 +23,7 @@
 #'
 #' @export
 #' @examples
-Olink_lvl1 <- function(
+olink_lvl1 <- function(
   olink_files,
   proj_names,
   KitLot_info,
@@ -100,7 +100,7 @@ Olink_lvl1 <- function(
 }
 
 
-#' @title Olink_qc
+#' @title olink_qc
 #' @description tallies the number of failed and passed assay and samples per each 96-well plate
 #'
 #' @param data [`tibble`][`tibble::tibble`] containing Olink data
@@ -112,7 +112,7 @@ Olink_lvl1 <- function(
 #' @importFrom dplyr filter group_by tally ungroup
 #' @export
 #' @examples
-Olink_qc <- function(.data) {
+olink_qc <- function(.data) {
   table_assay <-
     .data |>
     dplyr::filter(AssayType == "assay") |> # filter for only assays instead of all extension, plate controls
@@ -136,7 +136,7 @@ Olink_qc <- function(.data) {
 }
 
 ## Level 2 QC Part 1
-#' @title Olink_lvl2_prep
+#' @title olink_lvl2_prep
 #' @description
 #'
 #' @param data a [`tibble`][`tibble::tibble`] containing batch-corrected Olink data
@@ -146,7 +146,7 @@ Olink_qc <- function(.data) {
 #' @importFrom dplyr mutate filter group_by summarise case_when select left_join
 #' @export
 #' @examples
-Olink_lvl2_prep <- function(.data) {
+olink_lvl2_prep <- function(.data) {
   .data <-
     .data |>
     dplyr::mutate(
@@ -201,7 +201,7 @@ Olink_lvl2_prep <- function(.data) {
     )
 }
 
-#' @title Olink_lvl2
+#' @title olink_lvl2
 #' @description Level 2 QC Part 2
 #'
 #' @param data tibble or list of tibbles
@@ -217,7 +217,7 @@ Olink_lvl2_prep <- function(.data) {
 #'
 #' @export
 #' @examples
-Olink_lvl2 <- function(.data, multifile = TRUE, proj_dir = NULL) {
+olink_lvl2 <- function(.data, multifile = TRUE, proj_dir = NULL) {
   proj_dir <- proj_dir %||% getwd()
 
   # concatenate the data

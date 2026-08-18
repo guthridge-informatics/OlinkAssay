@@ -4,7 +4,7 @@
 \alias{pca_to_umap}
 \title{pca_to_umap}
 \usage{
-pca_to_umap(data)
+pca_to_umap(.data)
 }
 \description{
 Automatically find the best PCA dimensional cut-off for the subsequent UMAP

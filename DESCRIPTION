@@ -2,9 +2,9 @@ Package: olinkqc
 Title: Olink HT quality control, processing, and organization
 Version: 0.0.0.9000
 Authors@R: c(
-    person(given="Ben", family="Jones", email = "ben.jones@omrf.org", role = c("aut", "cre")),
+    person(given="Ben", family="Jones", email = "ben.jones@omrf.org", role = c("aut")),
     person(given="Miles", family="Smith", email = "miles.smith@omrf.org", role = c("aut", "cre"), comment = c(ORCID = "0000-0003-0651-809X")),
-    person(given="Rufei", family="Lu", email = "rufei.lu@omrf.org", role = c("aut", "ctb"), comment = c(ORCID = "0009-0007-3644-4702")))
+    person(given="Rufei", family="Lu", email = "rufei.lu@omrf.org", role = c("aut"), comment = c(ORCID = "0009-0007-3644-4702")))
 Depends: R (>= 4.1.0)
 Description: Used for initial processing of Olink HT data. Runs quality control,
  performs batch correction, filters bad samples and assays, and matches samples

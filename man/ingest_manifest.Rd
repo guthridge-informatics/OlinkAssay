@@ -31,3 +31,8 @@ A named list of \code{\link[tibble:tibble]{"tibbles"}}
 \description{
 
 }
+\examples{
+\dontrun{}
+ingest_manifest(input = "/path/to/data")
+
+}

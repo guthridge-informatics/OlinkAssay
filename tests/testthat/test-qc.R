@@ -19,7 +19,7 @@ testthat::test_that(desc = "Olink_lvl1", code = {
   )
   tmp_path <- withr::local_tempfile()
   lvl1_results <-
-    olinkqc::Olink_lvl1(
+    olinkqc::olink_lvl1(
       olink_files = example_olink_reader_results,
       proj_names = c("Bridge", "ABC-preEVADE"),
       KitLot_info = "LC00358",
@@ -71,7 +71,7 @@ testthat::test_that(desc = "olink_qc", code = {
       "expected_olink_qc_results.RDS"
     )
   )
-  olink_qc_results <- Olink_qc(.data = example_olink_data_tbl)
+  olink_qc_results <- olink_qc(.data = example_olink_data_tbl)
   testthat::expect_equal(
     object = olink_qc_results,
     expected = expected_olink_qc_output
@@ -99,7 +99,7 @@ testthat::test_that(desc = "Olink_lvl2_prep", code = {
     )
   )
   testthat::expect_equal(
-    object = Olink_lvl2_prep(example_batch_corrected_olink_data_tbl),
+    object = olink_lvl2_prep(example_batch_corrected_olink_data_tbl),
     expected = expected_olink_lvl2_prep
   )
 })
@@ -124,7 +124,7 @@ testthat::test_that(desc = "Olink_lvl2", code = {
     )
   )
   tmp_path <- withr::local_tempfile()
-  lvl2_results <- olinkqc::Olink_lvl2(
+  lvl2_results <- olinkqc::olink_lvl2(
     .data = example_lvl2_prepped_results,
     multifile = TRUE,
     proj_dir = tmp_path

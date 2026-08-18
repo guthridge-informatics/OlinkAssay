@@ -35,7 +35,7 @@ normalization_check <- function(data_corrected, pt.size = 0.5) {
 
   p1 <- rawextnpx_data |>
     na.omit() |>
-    UMAP_groups(
+    umap_groups(
       groups = na.omit(data_corrected_combined)[["PlateID"]],
       n_neighbors = 30,
       pt.size = pt.size
@@ -51,7 +51,7 @@ normalization_check <- function(data_corrected, pt.size = 0.5) {
 
   p2 <- corrextnpx_data |>
     na.omit() |>
-    UMAP_groups(
+    umap_groups(
       groups = na.omit(data_corrected_combined)[["PlateID"]],
       n_neighbors = 30,
       pt.size = pt.size
@@ -69,7 +69,7 @@ normalization_check <- function(data_corrected, pt.size = 0.5) {
 
   p3 <- logprotexp_data |>
     na.omit() |>
-    UMAP_groups(
+    umap_groups(
       groups = na.omit(data_corrected_combined)[["PlateID"]],
       pt.size = pt.size,
       n_neighbors = 30
@@ -89,7 +89,7 @@ normalization_check <- function(data_corrected, pt.size = 0.5) {
   )
 }
 
-#' @title
+#' @title umap_snn
 #' @description graph the clean reworked umap
 #'
 #' @param data
@@ -118,7 +118,7 @@ normalization_check <- function(data_corrected, pt.size = 0.5) {
 #'
 #' @export
 #' @examples
-UMAP_snn <- function(
+umap_snn <- function(
   data,
   k = NA,
   eps = 7,
@@ -223,7 +223,7 @@ UMAP_snn <- function(
   )
 }
 
-#' @title UMAP_groups
+#' @title umap_groups
 #' @description graph the clean reworked umap
 #'
 #' @param data
@@ -251,7 +251,7 @@ UMAP_snn <- function(
 #'
 #' @export
 #' @examples
-UMAP_groups <- function(
+umap_groups <- function(
   data,
   groups,
   eps = 7,
@@ -347,7 +347,7 @@ UMAP_groups <- function(
     ggplot2::ggtitle(label = "")
 }
 
-#' @title graph_UMAP
+#' @title graph_umap
 #' @description graphing pretty umap graph
 #'
 #' @param data_umap
@@ -366,7 +366,7 @@ UMAP_groups <- function(
 #'
 #' @export
 #' @examples
-graph_UMAP <- function(
+graph_umap <- function(
   data_umap,
   groups,
   arrow_size = 0.1,
@@ -593,7 +593,7 @@ batch_correction_umap_prep <- function(
     dplyr::select(
       tidyselect::where(
         fn = \(x) {
-          all(is.numeric(x) && !(any(is.na(x))))
+          all(is.numeric(x) && !anyNA(x))
         }
       )
     ) |>

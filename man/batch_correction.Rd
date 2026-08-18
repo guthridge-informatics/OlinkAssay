@@ -4,7 +4,7 @@
 \alias{batch_correction}
 \title{batch_correction}
 \usage{
-batch_correction(data, method = c("median", "global median"))
+batch_correction(.data, method = c("median", "global median"))
 }
 \description{
 Main routing function for the batch correction and normalization

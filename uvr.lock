@@ -208,6 +208,14 @@ checksum = "md5:12904714853ba84b8d1808266e5ef943"
 requires = ["bit"]
 
 [[package]]
+name = "brew"
+version = "1.0.10"
+source = "cran"
+raw_version = "1.0-10"
+url = "https://cran.r-project.org/src/contrib/brew_1.0-10.tar.gz"
+checksum = "md5:c1ebbea7284161a8884ffe9ae5ca451f"
+
+[[package]]
 name = "bslib"
 version = "0.12.0"
 source = "cran"
@@ -241,6 +249,19 @@ requires = [
 ]
 
 [[package]]
+name = "callr"
+version = "3.8.0"
+source = "cran"
+raw_version = "3.8.0"
+url = "https://cran.r-project.org/src/contrib/callr_3.8.0.tar.gz"
+checksum = "md5:6f2cca7ac13cfa5ef90288587f43de6f"
+requires = [
+    "otel",
+    "processx",
+    "R6",
+]
+
+[[package]]
 name = "cellranger"
 version = "1.1.0"
 source = "cran"
@@ -267,6 +288,14 @@ source = "cran"
 raw_version = "0.8.1"
 url = "https://cran.r-project.org/src/contrib/clipr_0.8.1.tar.gz"
 checksum = "md5:e3618a0611ca2dfbc6475975a163ab6a"
+
+[[package]]
+name = "commonmark"
+version = "2.0.0"
+source = "cran"
+raw_version = "2.0.0"
+url = "https://cran.r-project.org/src/contrib/commonmark_2.0.0.tar.gz"
+checksum = "md5:ac18da7841af62e8c457dd4872cce1ba"
 
 [[package]]
 name = "cowplot"
@@ -317,6 +346,18 @@ requires = [
     "generics",
     "Rcpp",
     "Rcpp",
+]
+
+[[package]]
+name = "desc"
+version = "1.4.3"
+source = "cran"
+raw_version = "1.4.3"
+url = "https://cran.r-project.org/src/contrib/desc_1.4.3.tar.gz"
+checksum = "md5:25e3c3be23e19c0f9164ed251c79f677"
+requires = [
+    "cli",
+    "R6",
 ]
 
 [[package]]
@@ -778,6 +819,14 @@ checksum = "md5:748b0fa601173da477706803783b6943"
 requires = ["askpass"]
 
 [[package]]
+name = "otel"
+version = "0.2.0"
+source = "cran"
+raw_version = "0.2.0"
+url = "https://cran.r-project.org/src/contrib/otel_0.2.0.tar.gz"
+checksum = "md5:cecd0f434a6327dcf5ca0bc2da494d06"
+
+[[package]]
 name = "pathviewr"
 version = "1.1.8"
 source = "cran"
@@ -817,12 +866,46 @@ requires = [
 ]
 
 [[package]]
+name = "pkgbuild"
+version = "1.4.8"
+source = "cran"
+raw_version = "1.4.8"
+url = "https://cran.r-project.org/src/contrib/pkgbuild_1.4.8.tar.gz"
+checksum = "md5:7708705f2645a0852f41af6e3a36d8d7"
+requires = [
+    "callr",
+    "cli",
+    "desc",
+    "processx",
+    "R6",
+]
+
+[[package]]
 name = "pkgconfig"
 version = "2.0.3"
 source = "cran"
 raw_version = "2.0.3"
 url = "https://cran.r-project.org/src/contrib/pkgconfig_2.0.3.tar.gz"
 checksum = "md5:7b9ca1d45d941238381cb55d13ff4d68"
+
+[[package]]
+name = "pkgload"
+version = "1.5.3"
+source = "cran"
+raw_version = "1.5.3"
+url = "https://cran.r-project.org/src/contrib/pkgload_1.5.3.tar.gz"
+checksum = "md5:9f38a3a0d87ea2d72d1d9e9b9bfd1106"
+requires = [
+    "cli",
+    "desc",
+    "fs",
+    "glue",
+    "lifecycle",
+    "pkgbuild",
+    "processx",
+    "rlang",
+    "rprojroot",
+]
 
 [[package]]
 name = "prettyunits"
@@ -927,6 +1010,14 @@ url = "https://cran.r-project.org/src/contrib/rappdirs_0.3.4.tar.gz"
 checksum = "md5:a990a3ddcfa9eb422cd406f78084fbd8"
 
 [[package]]
+name = "rdtools"
+version = "0.1.0"
+source = "cran"
+raw_version = "0.1.0"
+url = "https://cran.r-project.org/src/contrib/rdtools_0.1.0.tar.gz"
+checksum = "md5:15243eafd24d97371d15f573530d9a12"
+
+[[package]]
 name = "readr"
 version = "2.2.0"
 source = "cran"
@@ -997,6 +1088,29 @@ requires = [
     "tinytex",
     "xfun",
     "yaml",
+]
+
+[[package]]
+name = "roxygen2"
+version = "8.1.0"
+source = "cran"
+raw_version = "8.1.0"
+url = "https://cran.r-project.org/src/contrib/roxygen2_8.1.0.tar.gz"
+checksum = "md5:db68d5c2c7cff5bf6c7db0069507a465"
+requires = [
+    "brew",
+    "cli",
+    "commonmark",
+    "desc",
+    "knitr",
+    "lifecycle",
+    "pkgload",
+    "R6",
+    "rdtools",
+    "rlang",
+    "withr",
+    "xml2",
+    "cpp11",
 ]
 
 [[package]]
