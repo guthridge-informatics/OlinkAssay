@@ -4,7 +4,7 @@
 \alias{ctrl_ref}
 \title{ctrl_ref}
 \usage{
-ctrl_ref(data)
+ctrl_ref(.data)
 }
 \description{
 Calculate the default plate control batch correction

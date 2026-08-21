@@ -4,7 +4,7 @@
 \alias{global_ref}
 \title{global_ref}
 \usage{
-global_ref(data)
+global_ref(.data)
 }
 \description{
 To be used for Studies where proper randomization can be verified or where plate controls cannot be used for normalization

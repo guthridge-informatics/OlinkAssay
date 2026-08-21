@@ -10,12 +10,11 @@ ingest_manifest(
   sample_column = "SampleID",
   project_column = "Project",
   manifest_sheet = "ManifestBuilder",
-  ...
+  additional_columns = NULL
 )
 }
 \arguments{
-\item{input}{path to where Olink run manifest. Manifest MUST BE in excel format
-and MUST HAVE a \code{SampleID} and \code{project} columns.}
+\item{input}{path to where Olink run manifest. Manifest must be in excel or comma-delimited format.}
 
 \item{sample_column}{Name of column containing sample names that matches the values in \code{SampleID} in the Olink output. Default = \code{"SampleID"}}
 
@@ -23,16 +22,21 @@ and MUST HAVE a \code{SampleID} and \code{project} columns.}
 
 \item{manifest_sheet}{Name of the sheet in the excel file containing the relevant sample information. Default: the first sheet.}
 
-\item{...}{not currently used}
+\item{additional_columns}{Any additional collumns from the manifest that should be carried over into later metadata}
 }
 \value{
-A named list of \code{\link[tibble:tibble]{"tibbles"}}
+A \code{\link[tibble:tibble]{"tibble"}} containing only the the \code{sample_column}, \code{project_column}, anything in \code{additional_columns}
 }
 \description{
-
+Read in the manifest of samples for an Olink run
 }
 \examples{
 \dontrun{}
-ingest_manifest(input = "/path/to/data")
+ingest_manifest(
+   input = "/path/to/data",
+   sample_column = `Tube ID`,
+   project_column = `Project`,
+   additional_columns = c(`Sample Type`)
+)
 
 }

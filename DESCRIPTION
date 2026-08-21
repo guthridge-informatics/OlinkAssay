@@ -12,6 +12,7 @@ Description: Used for initial processing of Olink HT data. Runs quality control,
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
+RoxygenNote: 8.1.0
 Config/roxygen2/version: 8.1.0
 Config/testthat/edition: 3
 NeedsCompilation: "no"
@@ -35,10 +36,13 @@ Imports:
     readxl,
     rlang,
     rmarkdown,
+    S4Vectors,
     stringr,
+    SummarizedExperiment,
     tidyr,
     tidyselect,
     uwot,
     withr
 Suggests: 
     testthat (>= 3.0.0)
+biocViews: Software

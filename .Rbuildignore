@@ -5,3 +5,7 @@
 ^uvr\.toml$
 ^uvr\.lock$
 ^\.uvr$
+^[.]?air[.]toml$
+^\.vscode$
+^revdep$
+^\.github$

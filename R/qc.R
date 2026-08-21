@@ -5,7 +5,7 @@
 #' olink_lvl1
 #' Level 1 QC
 #'
-#' @param olink_files Output from [Olink_Reader()]. A list with two members:
+#' @param olink_files Output from [olink_reader()]. A list with two members:
 #' 1. `"data"`: a named list of [`tibbles`][tibble::tibble] containing Olink data
 #' 2. `"manifest"`: a named list of [`tibbles`][tibble::tibble] containing manifest data
 #' @param proj_names Character vector with the projects the data is associated with

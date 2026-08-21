@@ -14,7 +14,7 @@ testthat::test_that(desc = "ctrl_ref", code = {
         "expected_ctrl_ref_tbl.RDS"
     ))
     testthat::expect_equal(
-        olinkqc::ctrl_ref(data = example_data),
+        olinkqc::ctrl_ref(.data = example_data),
         expected_correction
     )
 })
@@ -35,7 +35,7 @@ testthat::test_that(desc = "global_ref", code = {
         "expected_global_ref_tbl.RDS"
     ))
     testthat::expect_equal(
-        olinkqc::global_ref(data = example_data),
+        olinkqc::global_ref(.data = example_data),
         expected_correction
     )
 })
@@ -66,11 +66,11 @@ testthat::test_that(desc = "batch_correction", code = {
     ))
 
     testthat::expect_equal(
-        object = batch_correction(data = example_data, method = "median"),
+        object = batch_correction(.data = example_data, method = "median"),
         expected = expected_median_corrected
     )
     testthat::expect_equal(
-        object = batch_correction(data = example_data, method = "global"),
+        object = batch_correction(.data = example_data, method = "global"),
         expected = expected_global_median_corrected
     )
 })
