@@ -24,7 +24,7 @@ as_SummarizedExperiment <- function(
 ) {
   correction_method <- match.arg(correction_method)
   if (correction_method %in% c("median", "global")) {
-    df <- batch_correction(.data, method = correction_method)
+    .data <- batch_correction.tbl_df(.data, method = correction_method)
   } else {
     assay_tables <- assay_tables[stringr::str_detect(
       string = assay_tables,
@@ -33,7 +33,7 @@ as_SummarizedExperiment <- function(
     )]
   }
 
-  metadata <- dplyr::select(
+  .metadata <- dplyr::select(
     .data,
     Panel,
     SoftwareVersion,
@@ -50,7 +50,7 @@ as_SummarizedExperiment <- function(
     tibble::deframe() |>
     as.list()
 
-  metadata[["SampleBlockQCWarn"]] <-
+  .metadata[["SampleBlockQCWarn"]] <-
     dplyr::filter(
       .data = .data,
       SampleType == "SAMPLE",
@@ -67,7 +67,7 @@ as_SummarizedExperiment <- function(
     ) |>
     tibble::column_to_rownames(var = "Assay")
 
-  metadata[["SampleBlockQCFail"]] <-
+  .metadata[["SampleBlockQCFail"]] <-
     dplyr::filter(
       .data = .data,
       SampleType == "SAMPLE",
@@ -110,7 +110,7 @@ as_SummarizedExperiment <- function(
     ) |>
     purrr::set_names(assay_tables)
 
-  SummarizedExperiment::colData(se) <-
+  .coldata <-
     .data |>
     extract_dfs(
       filter_assay_controls = TRUE,
@@ -130,7 +130,7 @@ as_SummarizedExperiment <- function(
     tibble::column_to_rownames(var = "SampleID") |>
     S4Vectors::DataFrame()
 
-  SummarizedExperiment::rowData(se) <-
+  .rowdata <-
     .data |>
     extract_dfs(
       filter_assay_controls = TRUE,
@@ -147,12 +147,13 @@ as_SummarizedExperiment <- function(
       # AssayQCWarn
     ) |>
     dplyr::distinct() |>
-    dplyr::left_join(
-      correction_factors,
-      by = dplyr::join_by(Assay == Assay)
-    ) |>
     tibble::column_to_rownames(var = "Assay") |>
     S4Vectors::DataFrame()
 
-  se
+  SummarizedExperiment::SummarizedExperiment(
+    assays = sample_df,
+    rowData = .rowdata,
+    colData = .coldata,
+    metadata = .metadata
+  )
 }

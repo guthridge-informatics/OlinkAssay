@@ -247,7 +247,3 @@ setup_sdp <- function(path) {
     }
   )
 }
-
-as_SummarizedExperient <- function(tbl) {
-  sample_tbl
-}
