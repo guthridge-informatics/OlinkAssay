@@ -2,8 +2,7 @@
 % Please edit documentation in R/qc.R
 \name{olink_lvl1}
 \alias{olink_lvl1}
-\title{olink_lvl1
-Level 1 QC}
+\title{olink_lvl1}
 \usage{
 olink_lvl1(
   olink_files,
@@ -35,6 +34,5 @@ olink_lvl1(
 \item{proj_dir}{path to where the files should be saved in the standard data package output format}
 }
 \description{
-olink_lvl1
 Level 1 QC
 }

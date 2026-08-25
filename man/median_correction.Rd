@@ -11,11 +11,7 @@ median_correction(object, ...)
 \method{median_correction}{tibble}(.data, meds)
 
 \method{median_correction}{list}(.data, meds)
-
-median_correction(object, ...)
 }
 \description{
 This function takes either global or plate control median frames and applies differences
-
-Main routing function for the batch correction and normalization
 }

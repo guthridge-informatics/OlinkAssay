@@ -24,5 +24,5 @@ A SummarisedExperiment version of the Olink data
 }
 \description{
 Convert the table from an Olink-HT parquet file into a
-SummarizedExperiment object
+SummarizedExperiment object. The data must already read from disk and be in memory.
 }

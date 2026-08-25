@@ -1,6 +1,6 @@
 #' @title as_SummarizedExperiment
 #' @description Convert the table from an Olink-HT parquet file into a
-#'  SummarizedExperiment object
+#'  SummarizedExperiment object. The data must already read from disk and be in memory.
 #' @param .data [`tibble::tibble`] of raw Olink-HT data, directly from `arrow::read_parquet`
 #' @param assay_tables Which columns contain data that should be retained as a feature-by-sample matrix in the `assays`
 #'  slot (default: `Count`, `ExtNPX`, `ExtNPX_Corrected`, `Correction`, `NPX`, `PCNormalizedNPX`)
@@ -10,6 +10,7 @@
 #'
 #' @export
 #' @examples
+
 as_SummarizedExperiment <- function(
   .data,
   assay_tables = c(

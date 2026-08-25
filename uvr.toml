@@ -1,5 +1,6 @@
 [project]
 name = "olinkqc"
+r_version = "4.6.1"
 
 [dependencies]
 airway = "*"
@@ -18,6 +19,7 @@ gitcreds = "*"
 glue = "*"
 here = "*"
 janitor = "*"
+lobstr = "*"
 magrittr = "*"
 pak = "*"
 pathviewr = "*"
@@ -28,6 +30,7 @@ readxl = "*"
 rlang = "*"
 rmarkdown = "*"
 roxygen2 = "*"
+sloop = "*"
 stringr = "*"
 tidyr = "*"
 tidyselect = "*"

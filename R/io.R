@@ -1,4 +1,4 @@
-#' @title ingest_olink_data
+#' @title import_olink_data
 #' @description Read multiple Olink output files into a list and name them based on the file name
 #'
 #' @param input path to where the individual Olink run data can be found
@@ -7,9 +7,9 @@
 #' @export
 #' @examples
 #' \dontrun{}
-#' ingest_olink_data(input = "/path/to/data")
+#' import_olink_data(input = "/path/to/data")
 #'
-ingest_olink_data <- function(input) {
+import_olink_data <- function(input) {
   files_run <- list.files(
     path = input,
     pattern = "\\.parquet$",
@@ -32,10 +32,10 @@ ingest_olink_data <- function(input) {
   .data
 }
 
-#' @title ingest_manifest
+#' @title import_manifest
 #' @description Read in the manifest of samples for an Olink run
 #'
-#' @param input path to where Olink run manifest. Manifest must be in excel or comma-delimited format.
+#' @param manifest path to where Olink run manifest. Manifest must be in excel or comma-delimited format.
 #' @param manifest_sheet Name of the sheet in the excel file containing the relevant sample information. Default: the first sheet.
 #' @param sample_column Name of column containing sample names that matches the values in `SampleID` in the Olink output. Default = `"SampleID"`
 #' @param project_column Name of the column containing the name of the project the sample is associated with. Default = `"project"`
@@ -46,19 +46,18 @@ ingest_olink_data <- function(input) {
 #' @export
 #' @examples
 #' \dontrun{}
-#' ingest_manifest(
+#' import_manifest(
 #'    input = "/path/to/data",
 #'    sample_column = `Tube ID`,
 #'    project_column = `Project`,
 #'    additional_columns = c(`Sample Type`)
 #' )
 #'
-ingest_manifest <- function(
-  input,
-  output_directory,
+import_manifest <- function(
+  manifest,
+  manifest_sheet = "ManifestBuilder",
   sample_column = "SampleID",
   project_column = "Project",
-  manifest_sheet = "ManifestBuilder",
   additional_columns = NULL
 ) {
   if (!is.null(sample_column)) {
@@ -71,7 +70,7 @@ ingest_manifest <- function(
   if (!is.null(additional_columns)) {
     loc <- tidyselect::eval_select(
       rlang::expr(additional_columns),
-      data = input
+      data = manifest
     )
   } else {
     loc <- NULL
@@ -90,7 +89,7 @@ ingest_manifest <- function(
     )
 
   data_name <- stringr::str_split_i(
-    string = input,
+    string = manifest,
     pattern = .Platform$file.sep,
     i = -1
   ) |>
@@ -102,7 +101,7 @@ ingest_manifest <- function(
 
 #' @title multifile_write
 #' @description Write multiple files into a list and name them based on the file name without file extension
-#' @details `multifile_write` encapsulates `ingest_olink_data` and `ingest_manifest` along with creating the directory
+#' @details `multifile_write` encapsulates `import_olink_data` and `import_manifest` along with creating the directory
 #'
 #' @param data A named list of [`tibble::tibble`]
 #' @param file_extension Output type: `"parquet"` or `"csv"` (default `"parquet"`)
@@ -164,7 +163,7 @@ multifile_write <- function(
 #' @param input project directory to which `"code"`, `"level 1"`, and `"level 2"` files should be
 #' written and where the output from NPXExplorer and the sample manifests can be found
 #' @param output path to where the standard data package directory structure should be setup and files written to
-#' @inheritParams ingest_manifest manifest_sheet sample_column project_column
+#' @inheritParams import_manifest manifest_sheet sample_column project_column
 #'
 #' @importFrom purrr map
 #' @returns list with
@@ -191,13 +190,14 @@ olink_reader <- function(
 
   setup_sdp(output)
 
+  manifest <- list.files(input, pattern = "xlsx", full.names = TRUE)
   # Return parquet files
   list(
-    data = ingest_olink_data(
+    data = import_olink_data(
       input
     ),
-    manifest = ingest_manifest(
-      input,
+    manifest = import_manifest(
+      manifest = manifest,
       sample_column = sample_column,
       project_column = project_column,
       manifest_sheet = manifest_sheet

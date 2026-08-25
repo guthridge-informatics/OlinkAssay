@@ -65,6 +65,7 @@ median_correction <-
 
 #' @rdname median_correction
 #' @method median_correction tibble
+#' @exportS3Method oinkqc::median_correction
 #' @returns
 median_correction.tbl_df <- function(.data, meds) {
   # calculate the medians for each 384-well plate
@@ -95,6 +96,7 @@ median_correction.tbl_df <- function(.data, meds) {
 
 #' @rdname median_correction
 #' @method median_correction list
+#' @export
 #' @returns
 median_correction.list <- function(.data, meds) {
   # calculate the medians for each 384-well plate
@@ -145,16 +147,17 @@ median_correction.list <- function(.data, meds) {
 #'
 #' @export
 #' @examples
-median_correction <-
+batch_correction <-
   function(
     object,
     ...
   ) {
-    UseMethod("median_correction")
+    UseMethod("batch_correction")
   }
 
 #' @rdname batch_correction
 #' @method batch_correction tibble
+#' @exportS3Method olinkqc::batch_correction
 #' @returns
 batch_correction.tbl_df <- function(
   .data,
@@ -165,11 +168,9 @@ batch_correction.tbl_df <- function(
   #   .data <- list(.data)
   # }
   if (method == "median") {
-    # meds <- purrr::map(.x = .data, .f = ctrl_ref)
     meds <- ctrl_ref(.data)
   } else if (method == "global median") {
     meds <- global_ref(.data)
-    # meds <- purrr::map(.x = .data, .f = global_ref)
   }
 
   median_correction(.data, meds)
@@ -177,6 +178,7 @@ batch_correction.tbl_df <- function(
 
 #' @rdname batch_correction
 #' @method batch_correction list
+#' @export
 #' @returns
 batch_correction.list <- function(
   .data,

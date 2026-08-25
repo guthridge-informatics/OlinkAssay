@@ -2,8 +2,8 @@
 # where they save a file. Since these all are saving the same data
 # that they return, we just yank that and put it into a new file
 
-#' olink_lvl1
-#' Level 1 QC
+#' @title olink_lvl1
+#' @description Level 1 QC
 #'
 #' @param olink_files Output from [olink_reader()]. A list with two members:
 #' 1. `"data"`: a named list of [`tibbles`][tibble::tibble] containing Olink data

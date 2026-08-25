@@ -258,11 +258,11 @@ requires = [
 
 [[package]]
 name = "S4Vectors"
-version = "0.50.1"
+version = "0.50.2"
 source = "bioconductor"
-raw_version = "0.50.1"
-url = "https://bioconductor.org/packages/3.23/bioc/src/contrib/S4Vectors_0.50.1.tar.gz"
-checksum = "md5:b65ef1a398c688677648a1595b524caf"
+raw_version = "0.50.2"
+url = "https://bioconductor.org/packages/3.23/bioc/src/contrib/S4Vectors_0.50.2.tar.gz"
+checksum = "md5:9bc7f87710636bf9637b41bcb3e3d621"
 requires = ["BiocGenerics"]
 
 [[package]]
@@ -364,11 +364,11 @@ requires = ["SummarizedExperiment"]
 
 [[package]]
 name = "arrow"
-version = "25.0.0"
+version = "25.0.1"
 source = "cran"
-raw_version = "25.0.0"
-url = "https://cran.r-project.org/src/contrib/arrow_25.0.0.tar.gz"
-checksum = "md5:ad509e6f67cab44b236d8984fac461c1"
+raw_version = "25.0.1"
+url = "https://cran.r-project.org/src/contrib/arrow_25.0.1.tar.gz"
+checksum = "md5:a337ef80e3605632842b5ed5846f12cd"
 requires = [
     "assertthat",
     "bit64",
@@ -571,6 +571,14 @@ url = "https://cran.r-project.org/src/contrib/clipr_0.8.1.tar.gz"
 checksum = "md5:e3618a0611ca2dfbc6475975a163ab6a"
 
 [[package]]
+name = "codetools"
+version = "0.2.20"
+source = "cran"
+raw_version = "0.2-20"
+url = "https://cran.r-project.org/src/contrib/codetools_0.2-20.tar.gz"
+checksum = "md5:b6d2fb49c00a528b04f574892359aa55"
+
+[[package]]
 name = "commonmark"
 version = "2.0.0"
 source = "cran"
@@ -646,11 +654,11 @@ checksum = "md5:8af2ccbf5d85dc18866f45f1f26f348d"
 
 [[package]]
 name = "data.table"
-version = "1.18.4"
+version = "1.18.6-4.1"
 source = "cran"
-raw_version = "1.18.4"
-url = "https://cran.r-project.org/src/contrib/data.table_1.18.4.tar.gz"
-checksum = "md5:8802d3e9516d5b38dd4aa1a473e2ac6e"
+raw_version = "1.18.6.1"
+url = "https://cran.r-project.org/src/contrib/data.table_1.18.6.1.tar.gz"
+checksum = "md5:0c0ad7916017c1657610ab16c36fecdd"
 
 [[package]]
 name = "dbplyr"
@@ -1424,6 +1432,20 @@ requires = [
 ]
 
 [[package]]
+name = "lobstr"
+version = "1.2.1"
+source = "cran"
+raw_version = "1.2.1"
+url = "https://cran.r-project.org/src/contrib/lobstr_1.2.1.tar.gz"
+checksum = "md5:e95987d7c059397aa0129a8ef35bcb04"
+requires = [
+    "crayon",
+    "prettyunits",
+    "rlang",
+    "cpp11",
+]
+
+[[package]]
 name = "lubridate"
 version = "1.9.5"
 source = "cran"
@@ -2088,6 +2110,21 @@ checksum = "md5:f2b3f8a088d2956cd1ef3a8f7e1e8c7e"
 requires = [
     "Rcpp",
     "Rcpp",
+]
+
+[[package]]
+name = "sloop"
+version = "1.0.1"
+source = "cran"
+raw_version = "1.0.1"
+url = "https://cran.r-project.org/src/contrib/sloop_1.0.1.tar.gz"
+checksum = "md5:9e9142ac4e289090aa058df0c779891d"
+requires = [
+    "codetools",
+    "crayon",
+    "purrr",
+    "rlang",
+    "tibble",
 ]
 
 [[package]]
