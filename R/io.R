@@ -6,8 +6,9 @@
 #' @returns A named list of tibbles
 #' @export
 #' @examples
-#' \dontrun{}
+#' \dontrun{
 #' import_olink_data(input = "/path/to/data")
+#' }
 #'
 import_olink_data <- function(input) {
   files_run <- list.files(
@@ -45,13 +46,14 @@ import_olink_data <- function(input) {
 #'
 #' @export
 #' @examples
-#' \dontrun{}
+#' \dontrun{
 #' import_manifest(
 #'    input = "/path/to/data",
 #'    sample_column = `Tube ID`,
 #'    project_column = `Project`,
 #'    additional_columns = c(`Sample Type`)
 #' )
+#' }
 #'
 import_manifest <- function(
   manifest,
@@ -172,6 +174,7 @@ multifile_write <- function(
 #'
 #' @export
 #' @examples
+#' \dontrun{
 #' olink_reader(
 #'    input = "path/to/folder/with/manifest/and/parquet/files",
 #'    output = "path/to/output",
@@ -179,6 +182,7 @@ multifile_write <- function(
 #'    sample_column = "Tube ID",
 #'    project_column = "Project"
 #' )
+#' }
 olink_reader <- function(
   input,
   output,
@@ -223,8 +227,10 @@ olink_reader <- function(
 #'
 #' @export
 #' @examples
+#' \dontrun{
 #' tmp_path <- withr::local_tempfile()
 #' setup_sdp(path = tmp_path)
+#' }
 setup_sdp <- function(path) {
   purrr::walk(
     .x = c(

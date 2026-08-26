@@ -24,6 +24,8 @@ that as defined in the OlinkHT Standard Data Package, e.g.
 Setup a SDP hiearchical file structure
 }
 \examples{
+\dontrun{
 tmp_path <- withr::local_tempfile()
 setup_sdp(path = tmp_path)
+}
 }

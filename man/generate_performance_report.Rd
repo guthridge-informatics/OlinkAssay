@@ -36,12 +36,13 @@ Generate a QC performance report for a Olink HT
 project.
 }
 \examples{
-\dontrun{}
+\dontrun{
 generate_performance_report(
    project_name = "Volcano Science Project",
    correction_procedure = "median",
    sdp_directory = "/home/user/volcano_project/sdp",
    output_dir = "/home/user/reports",
    report_name = "assay_performance_report.pdf"
-)
+ )
+}
 }

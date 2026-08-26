@@ -450,6 +450,7 @@ graph_umap <- function(
 #' @importFrom dplyr select filter row_number arrange mutate if_else
 #' @importFrom ggplot2 ggplot aes geom_bar coord_polar theme_void theme scale_fill_manual geom_histogram stat_bin scale_x_continuous scale_y_continuous labs theme_classic facet_wrap vars
 #' @importFrom ggrepel geom_label_repel
+#' @importFrom scales percent
 #'
 #' @export
 #' @examples

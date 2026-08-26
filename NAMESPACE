@@ -43,6 +43,7 @@ exportMethods(npx)
 exportMethods(rowData)
 import(methods)
 importClassesFrom(SummarizedExperiment,SummarizedExperiment)
+importFrom(S4Vectors,mcols)
 importFrom(SummarizedExperiment,
   SummarizedExperiment,
   assay
@@ -116,7 +117,12 @@ importFrom(purrr,
 )
 importFrom(quarto,quarto_render)
 importFrom(readr,write_csv)
-importFrom(stats,prcomp)
+importFrom(scales,percent)
+importFrom(stats,
+  loess,
+  na.omit,
+  prcomp
+)
 importFrom(stringr,str_glue)
 importFrom(tibble,as_tibble)
 importFrom(tidyr,pivot_wider)

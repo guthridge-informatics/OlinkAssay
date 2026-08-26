@@ -13,6 +13,7 @@
 #' @importFrom ggplot2 ggplot aes geom_point geom_smooth theme_classic
 #' @importFrom dplyr select across summarise
 #' @importFrom tidyselect where
+#' @importFrom stats loess
 #'
 #' @export
 #' @examples
@@ -40,7 +41,7 @@ vst_to_pca <- function(.data, exclude = NULL) {
   }
 
   # plot the scatter plots of the mean and variance of each protein
-  fit_lowess <- loess(Variance ~ Mean, data_vst, span = 0.2)
+  fit_lowess <- stats::loess(Variance ~ Mean, data_vst, span = 0.2)
 
   # graph the loess function in the plot of mean vs variance
   plot <-
