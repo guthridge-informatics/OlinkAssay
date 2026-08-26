@@ -91,7 +91,7 @@ vst_to_pca <- function(.data, exclude = NULL) {
 #' @examples
 pca_to_umap <- function(.data) {
   # calculate the principal components
-  pca <- prcomp(na.omit(.data), scale. = TRUE, center = TRUE)
+  pca <- prcomp(stats::na.omit(.data), scale. = TRUE, center = TRUE)
   # get PCA importance from the principal component analysis
   res_pca <- summary(pca)$importance |>
     t() |>

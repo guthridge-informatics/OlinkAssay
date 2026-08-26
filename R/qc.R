@@ -158,8 +158,8 @@ olink_lvl2_prep <- function(.data) {
     dplyr::filter(SampleType == "NEGATIVE_CONTROL") |>
     dplyr::group_by(Assay, OlinkID) |>
     dplyr::summarise(
-      median_nc = median(na.omit(LogProtExp)),
-      iqr_nc = as.numeric(quantile(na.omit(LogProtExp), 0.75)),
+      median_nc = median(stats::na.omit(LogProtExp)),
+      iqr_nc = as.numeric(quantile(stats::na.omit(LogProtExp), 0.75)),
       .groups = 'drop'
     )
 

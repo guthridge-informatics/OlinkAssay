@@ -15,7 +15,7 @@ import_olink_data <- function(input) {
     pattern = "\\.parquet$",
     full.names = TRUE
   ) |>
-    na.omit() |>
+    stats::na.omit() |>
     as.character()
   if (length(files_run) < 1) {
     stop(stringr::str_glue("No {file_extension} files were found!"))

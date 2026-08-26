@@ -9,3 +9,9 @@
 ^\.vscode$
 ^revdep$
 ^\.github$
+^tests$
+^example
+.r-version
+test.R
+all.R
+manifest_format.md

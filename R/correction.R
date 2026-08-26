@@ -6,6 +6,7 @@
 #' @returns
 #'
 #' @importFrom dplyr filter group_by summarize
+#' @importFrom stats na.omit
 #'
 #' @export
 #' @examples
@@ -14,8 +15,8 @@ ctrl_ref <- function(.data) {
     dplyr::filter(SampleType == "PLATE_CONTROL" & AssayType == "assay") |>
     dplyr::group_by(OlinkID) |>
     dplyr::summarise(
-      Median = median(na.omit(ExtNPX)),
-      Variance = var(na.omit(ExtNPX))
+      Median = median(stats::na.omit(ExtNPX)),
+      Variance = var(stats::na.omit(ExtNPX))
     )
 }
 
@@ -35,8 +36,8 @@ global_ref <- function(.data) {
     dplyr::filter(SampleType == "SAMPLE" & AssayType == "assay") |> # filter down to just the samples and the assay
     dplyr::group_by(OlinkID) |> # grouped it by just the OlinkID
     dplyr::summarise(
-      Median = median(na.omit(ExtNPX)), # calculate the median
-      Variance = var(na.omit(ExtNPX))
+      Median = median(stats::na.omit(ExtNPX)), # calculate the median
+      Variance = var(stats::na.omit(ExtNPX))
     ) # calculate variance
 }
 
