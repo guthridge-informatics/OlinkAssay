@@ -2,9 +2,15 @@
 % Please edit documentation in R/correction.R
 \name{median_correction}
 \alias{median_correction}
+\alias{median_correction.tbl_df}
+\alias{median_correction.list}
 \title{median_correction}
 \usage{
-median_correction(data, meds)
+median_correction(object, ...)
+
+\method{median_correction}{tibble}(.data, meds)
+
+\method{median_correction}{list}(.data, meds)
 }
 \description{
 This function takes either global or plate control median frames and applies differences

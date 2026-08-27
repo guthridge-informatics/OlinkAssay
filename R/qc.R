@@ -2,10 +2,10 @@
 # where they save a file. Since these all are saving the same data
 # that they return, we just yank that and put it into a new file
 
-#' olink_lvl1
-#' Level 1 QC
+#' @title olink_lvl1
+#' @description Level 1 QC
 #'
-#' @param olink_files Output from [Olink_Reader()]. A list with two members:
+#' @param olink_files Output from [olink_reader()]. A list with two members:
 #' 1. `"data"`: a named list of [`tibbles`][tibble::tibble] containing Olink data
 #' 2. `"manifest"`: a named list of [`tibbles`][tibble::tibble] containing manifest data
 #' @param proj_names Character vector with the projects the data is associated with
@@ -158,8 +158,8 @@ olink_lvl2_prep <- function(.data) {
     dplyr::filter(SampleType == "NEGATIVE_CONTROL") |>
     dplyr::group_by(Assay, OlinkID) |>
     dplyr::summarise(
-      median_nc = median(na.omit(LogProtExp)),
-      iqr_nc = as.numeric(quantile(na.omit(LogProtExp), 0.75)),
+      median_nc = median(stats::na.omit(LogProtExp)),
+      iqr_nc = as.numeric(quantile(stats::na.omit(LogProtExp), 0.75)),
       .groups = 'drop'
     )
 

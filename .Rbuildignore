@@ -5,3 +5,13 @@
 ^uvr\.toml$
 ^uvr\.lock$
 ^\.uvr$
+^[.]?air[.]toml$
+^\.vscode$
+^revdep$
+^\.github$
+^tests$
+^example
+.r-version
+test.R
+all.R
+manifest_format.md

@@ -24,7 +24,7 @@ normalization_check <- function(data_corrected, pt.size = 0.5) {
       ExtNPX_Corrected,
       LogProtExp_Raw
     ) |>
-    na.omit() |>
+    stats::na.omit() |>
     tidyr::pivot_wider(
       names_from = ProteinID,
       values_from = c(RawExtNPX, ExtNPX_Corrected, LogProtExp_Raw)
@@ -34,9 +34,9 @@ normalization_check <- function(data_corrected, pt.size = 0.5) {
     dplyr::select(contains("RawExtNPX"))
 
   p1 <- rawextnpx_data |>
-    na.omit() |>
+    stats::na.omit() |>
     umap_groups(
-      groups = na.omit(data_corrected_combined)[["PlateID"]],
+      groups = stats::na.omit(data_corrected_combined)[["PlateID"]],
       n_neighbors = 30,
       pt.size = pt.size
     ) +
@@ -50,9 +50,9 @@ normalization_check <- function(data_corrected, pt.size = 0.5) {
     dplyr::select(contains("ExtNPX_Corrected"))
 
   p2 <- corrextnpx_data |>
-    na.omit() |>
+    stats::na.omit() |>
     umap_groups(
-      groups = na.omit(data_corrected_combined)[["PlateID"]],
+      groups = stats::na.omit(data_corrected_combined)[["PlateID"]],
       n_neighbors = 30,
       pt.size = pt.size
     ) +
@@ -68,9 +68,9 @@ normalization_check <- function(data_corrected, pt.size = 0.5) {
     dplyr::select(dplyr::contains("LogProtExp_Raw"))
 
   p3 <- logprotexp_data |>
-    na.omit() |>
+    stats::na.omit() |>
     umap_groups(
-      groups = na.omit(data_corrected_combined)[["PlateID"]],
+      groups = stats::na.omit(data_corrected_combined)[["PlateID"]],
       pt.size = pt.size,
       n_neighbors = 30
     ) +

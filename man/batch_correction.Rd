@@ -2,9 +2,15 @@
 % Please edit documentation in R/correction.R
 \name{batch_correction}
 \alias{batch_correction}
+\alias{batch_correction.tbl_df}
+\alias{batch_correction.list}
 \title{batch_correction}
 \usage{
-batch_correction(.data, method = c("median", "global median"))
+batch_correction(object, ...)
+
+\method{batch_correction}{tibble}(.data, method = c("median", "global median"))
+
+\method{batch_correction}{list}(.data, method = c("median", "global median"))
 }
 \description{
 Main routing function for the batch correction and normalization

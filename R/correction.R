@@ -6,16 +6,17 @@
 #' @returns
 #'
 #' @importFrom dplyr filter group_by summarize
+#' @importFrom stats na.omit
 #'
 #' @export
 #' @examples
-ctrl_ref <- function(data) {
-  data |>
+ctrl_ref <- function(.data) {
+  .data |>
     dplyr::filter(SampleType == "PLATE_CONTROL" & AssayType == "assay") |>
     dplyr::group_by(OlinkID) |>
     dplyr::summarise(
-      Median = median(na.omit(ExtNPX)),
-      Variance = var(na.omit(ExtNPX))
+      Median = median(stats::na.omit(ExtNPX)),
+      Variance = var(stats::na.omit(ExtNPX))
     )
 }
 
@@ -30,13 +31,13 @@ ctrl_ref <- function(data) {
 #'
 #' @export
 #' @examples
-global_ref <- function(data) {
-  data |>
+global_ref <- function(.data) {
+  .data |>
     dplyr::filter(SampleType == "SAMPLE" & AssayType == "assay") |> # filter down to just the samples and the assay
     dplyr::group_by(OlinkID) |> # grouped it by just the OlinkID
     dplyr::summarise(
-      Median = median(na.omit(ExtNPX)), # calculate the median
-      Variance = var(na.omit(ExtNPX))
+      Median = median(stats::na.omit(ExtNPX)), # calculate the median
+      Variance = var(stats::na.omit(ExtNPX))
     ) # calculate variance
 }
 
@@ -54,7 +55,51 @@ global_ref <- function(data) {
 #'
 #' @export
 #' @examples
-median_correction <- function(data, meds) {
+median_correction <-
+  function(
+    object,
+    ...
+  ) {
+    UseMethod("median_correction")
+  }
+
+
+#' @rdname median_correction
+#' @method median_correction tibble
+#' @exportS3Method oinkqc::median_correction
+#' @returns
+median_correction.tbl_df <- function(.data, meds) {
+  # calculate the medians for each 384-well plate
+  ref_med <-
+    meds |>
+    # calculate the mean of all medians to scale by
+    # and make a tibble that contains the OlinkID and the reference median
+    dplyr::rowwise() |>
+    dplyr::transmute(
+      OlinkID = OlinkID,
+      ReferenceMedian = mean(dplyr::c_across(tidyselect::contains("Median")))
+    )
+
+  meds_correction <-
+    dplyr::left_join(x = meds, y = ref_med, by = dplyr::join_by(OlinkID)) |>
+    dplyr::mutate(Correction = Median - ReferenceMedian)
+
+  data_correction <-
+    dplyr::left_join(
+      x = .data,
+      y = meds_correction,
+      by = dplyr::join_by(OlinkID)
+    ) |>
+    dplyr::mutate(ExtNPX_Corrected = ExtNPX - Correction)
+
+  data_correction
+}
+
+#' @rdname median_correction
+#' @method median_correction list
+#' @export
+#' @returns
+median_correction.list <- function(.data, meds) {
   # calculate the medians for each 384-well plate
   ref_med <-
     purrr::reduce(
@@ -80,7 +125,7 @@ median_correction <- function(data, meds) {
 
   data_correction <-
     purrr::map2(
-      .x = data,
+      .x = .data,
       .y = meds_correction,
       .f = \(x, y) {
         dplyr::left_join(x = x, y = y, by = dplyr::join_by(OlinkID)) |>
@@ -103,11 +148,45 @@ median_correction <- function(data, meds) {
 #'
 #' @export
 #' @examples
-batch_correction <- function(.data, method = c("median", "global median")) {
-  method <- match.arg(method)
-  if (!is.vector(.data)) {
-    .data <- list(.data)
+batch_correction <-
+  function(
+    object,
+    ...
+  ) {
+    UseMethod("batch_correction")
   }
+
+#' @rdname batch_correction
+#' @method batch_correction tibble
+#' @exportS3Method olinkqc::batch_correction
+#' @returns
+batch_correction.tbl_df <- function(
+  .data,
+  method = c("median", "global median")
+) {
+  method <- match.arg(method)
+  # if (!is.vector(.data)) {
+  #   .data <- list(.data)
+  # }
+  if (method == "median") {
+    meds <- ctrl_ref(.data)
+  } else if (method == "global median") {
+    meds <- global_ref(.data)
+  }
+
+  median_correction(.data, meds)
+}
+
+#' @rdname batch_correction
+#' @method batch_correction list
+#' @export
+#' @returns
+batch_correction.list <- function(
+  .data,
+  method = c("median", "global median")
+) {
+  method <- match.arg(method)
+
   if (method == "median") {
     meds <- purrr::map(.x = .data, .f = ctrl_ref)
   } else if (method == "global median") {

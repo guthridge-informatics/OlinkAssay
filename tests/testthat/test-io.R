@@ -8,7 +8,7 @@ testthat::test_that(desc = "ingest_olink_data", code = {
   ))
   test_data_directory <- here::here("tests", "initial_data")
   testthat::expect_mapequal(
-    object = olinkqc::ingest_olink_data(directory = test_data_directory),
+    object = olinkqc::import_olink_data(input = test_data_directory),
     expected = expected_ingest_olink_data
   )
 })
@@ -23,8 +23,8 @@ testthat::test_that(desc = "ingest_manifest", code = {
   ))
   test_data_directory <- here::here("tests", "initial_data")
   testthat::expect_mapequal(
-    object = olinkqc::ingest_manifest(
-      directory = test_data_directory,
+    object = olinkqc::import_manifest(
+      input = test_data_directory,
       sample_column = "Tube ID",
       project_column = "Project",
       manifest_sheet = "ManifestBuilder"

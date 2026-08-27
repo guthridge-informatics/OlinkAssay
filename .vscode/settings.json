@@ -1,12 +1,22 @@
 {
+  "[quarto]": {
+    "editor.defaultFormatter": "quarto.quarto",
+    "editor.formatOnSave": true
+  },
+  "[r]": {
+    "editor.defaultFormatter": "Posit.air-vscode",
+    "editor.formatOnSave": true
+  },
   "positron.r.customBinaries": [
     "/usr/local/bin/R",
     "/Users/milo/.uvr/r-versions/4.6.1/bin/R",
-    "/usr/lib/R/bin/R"
+    "/usr/lib/R/bin/R",
+    "/root/.uvr/r-versions/4.6.1/bin/R"
   ],
   "positron.r.customRootFolders": [
     "/Users/milo/.uvr/r-versions",
-    "/home/milo/.uvr/r-versions"
+    "/home/milo/.uvr/r-versions",
+    "/root/.uvr/r-versions"
   ],
   "positron.r.interpreters.default": "/usr/lib/R/bin/R",
   "r.rpath.linux": "/usr/lib/R/bin/R",

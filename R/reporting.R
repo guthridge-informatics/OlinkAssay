@@ -14,7 +14,7 @@
 #'
 #' @returns Nothing, but writes a PDF named `report_name` to `output_dir`
 #'
-#' @importFrom quarto quatorto_render
+#' @importFrom quarto quarto_render
 #' @importFrom withr local_tempfile
 #'
 #' @export

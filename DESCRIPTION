@@ -29,16 +29,22 @@ Imports:
     glue,
     here,
     janitor,
+    methods,
     pathviewr,
     purrr,
+    quarto,
     readr,
     readxl,
     rlang,
     rmarkdown,
+    S4Vectors,
     stringr,
+    SummarizedExperiment,
+    tibble,
     tidyr,
     tidyselect,
     uwot,
     withr
 Suggests: 
     testthat (>= 3.0.0)
+biocViews: Software
