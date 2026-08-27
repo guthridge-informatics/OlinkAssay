@@ -1,4 +1,4 @@
-Package: olinkqc
+Package: OlinkAssay
 Title: Olink HT quality control, processing, and organization
 Version: 0.0.0.9000
 Authors@R: c(
@@ -6,17 +6,17 @@ Authors@R: c(
     person(given="Miles", family="Smith", email = "miles.smith@omrf.org", role = c("aut", "cre"), comment = c(ORCID = "0000-0003-0651-809X")),
     person(given="Rufei", family="Lu", email = "rufei.lu@omrf.org", role = c("aut"), comment = c(ORCID = "0009-0007-3644-4702")))
 Depends: R (>= 4.1.0)
-Description: Used for initial processing of Olink HT data. Runs quality control,
- performs batch correction, filters bad samples and assays, and matches samples
- to projects listed in an associated manifest.
+Description: Provides a S4 class (based on SummarizedExperiment) and functions for importing, processing,
+ and correcting of Olink HT data. Runs quality control, performs batch correction, filters bad samples and
+ assays, and matches samples to projects listed in an associated manifest. 
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 Config/roxygen2/version: 8.1.0
 Config/testthat/edition: 3
 NeedsCompilation: no
-URL: https://github.com/guthridge-informatics/olinkqc
-BugReports: https://github.com/guthridge-informatics/olinkqc/issues
+URL: https://github.com/guthridge-informatics/OlinkAssay
+BugReports: https://github.com/guthridge-informatics/OlinkAssay/issues
 Language: en-US
 Imports: 
     arrow,

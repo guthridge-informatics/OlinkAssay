@@ -99,7 +99,7 @@ as_SummarizedExperiment <- function(
             -PreProcessingSoftware,
             -InstrumentType
           ) |>
-          extract_dfs(
+          .extract_dfs(
             filter_assay_controls = TRUE,
             filter_sample_controls = TRUE
           ) |>
@@ -113,7 +113,7 @@ as_SummarizedExperiment <- function(
 
   .coldata <-
     .data |>
-    extract_dfs(
+    .extract_dfs(
       filter_assay_controls = TRUE,
       filter_sample_controls = TRUE
     ) |>
@@ -133,7 +133,7 @@ as_SummarizedExperiment <- function(
 
   .rowdata <-
     .data |>
-    extract_dfs(
+    .extract_dfs(
       filter_assay_controls = TRUE,
       filter_sample_controls = TRUE
     ) |>

@@ -1,7 +1,7 @@
 #' @title import_olink_data
 #' @description Read multiple Olink output files into a list and name them based on the file name
 #'
-#' @param input path to where the individual Olink run data can be found
+#' @param path location where the individual Olink run data can be found
 #'
 #' @returns A named list of tibbles
 #' @export
@@ -10,9 +10,9 @@
 #' import_olink_data(input = "/path/to/data")
 #' }
 #'
-import_olink_data <- function(input) {
+import_olink_data <- function(path) {
   files_run <- list.files(
-    path = input,
+    path = path,
     pattern = "\\.parquet$",
     full.names = TRUE
   ) |>

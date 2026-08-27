@@ -8,15 +8,24 @@
 \usage{
 median_correction(.data, ...)
 
-\method{median_correction}{tbl_df}(.data, meds)
+\method{median_correction}{tbl_df}(.data, medians)
 
-\method{median_correction}{list}(.data, meds)
+\method{median_correction}{list}(.data, medians)
 }
 \arguments{
-\item{.data}{\code{\link[tibble:tibble]{tibble::tibble}} with Olink data}
+\item{.data}{\code{\link[tibble:tibble]{tibble}} or list of \code{tibbles} with Olink data}
 
-\item{meds}{\code{\link[tibble:tibble]{tibble::tibble}} with the median levels of assay proteins}
+\item{medians}{\code{\link[tibble:tibble]{tibble}} with three columns
+\enumerate{
+\item OlinkID
+\item Median
+\item Variance
+\item PlateRef
+}
+
+Generally best to just use the output from \code{ctrl_ref()} or \code{global_ref()}.}
 }
 \description{
-This function takes either global or plate control median frames and applies differences
+This function takes either global or plate control median frames
+and applies differences
 }

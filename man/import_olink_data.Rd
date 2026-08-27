@@ -4,10 +4,10 @@
 \alias{import_olink_data}
 \title{import_olink_data}
 \usage{
-import_olink_data(input)
+import_olink_data(path)
 }
 \arguments{
-\item{input}{path to where the individual Olink run data can be found}
+\item{path}{location where the individual Olink run data can be found}
 }
 \value{
 A named list of tibbles

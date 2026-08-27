@@ -11,13 +11,23 @@
 #' @export
 #' @examples
 ctrl_ref <- function(.data) {
-  .data |>
-    dplyr::filter(SampleType == "PLATE_CONTROL" & AssayType == "assay") |>
+  plate_ref <- stringr::str_split_i(
+    string = .data[["PlateID"]],
+    pattern = "_",
+    i = 1
+  ) |>
+    unique()
+
+  dplyr::filter(
+    .data = .data,
+    SampleType == "PLATE_CONTROL" & AssayType == "assay"
+  ) |>
     dplyr::group_by(OlinkID) |>
     dplyr::summarise(
       Median = median(stats::na.omit(ExtNPX)),
       Variance = var(stats::na.omit(ExtNPX))
-    )
+    ) |>
+    dplyr::mutate(PlateRef = plate_ref)
 }
 
 #' @title global_ref
@@ -32,20 +42,37 @@ ctrl_ref <- function(.data) {
 #' @export
 #' @examples
 global_ref <- function(.data) {
-  .data |>
-    dplyr::filter(SampleType == "SAMPLE" & AssayType == "assay") |> # filter down to just the samples and the assay
+  plate_ref <- stringr::str_split_i(
+    string = .data[["PlateID"]],
+    pattern = "_",
+    i = 1
+  ) |>
+    unique()
+
+  dplyr::filter(
+    .data = .data,
+    SampleType == "SAMPLE" & AssayType == "assay"
+  ) |> # filter down to just the samples and the assay
     dplyr::group_by(OlinkID) |> # grouped it by just the OlinkID
     dplyr::summarise(
-      Median = median(stats::na.omit(ExtNPX)), # calculate the median
+      Median = median(stats::na.omit(ExtNPX)),
       Variance = var(stats::na.omit(ExtNPX))
-    ) # calculate variance
+    ) |>
+    dplyr::mutate(PlateRef = plate_ref)
 }
 
 #' @title median_correction
-#' @description This function takes either global or plate control median frames and applies differences
+#' @description This function takes either global or plate control median frames
+#'  and applies differences
 #'
-#' @param .data [`tibble::tibble`] with Olink data
-#' @param meds [`tibble::tibble`] with the median levels of assay proteins
+#' @param .data [`tibble`][`tibble::tibble`] or list of `tibbles` with Olink data
+#' @param medians [`tibble`][`tibble::tibble`] with three columns
+#' 1. OlinkID
+#' 2. Median
+#' 3. Variance
+#' 4. PlateRef
+#'
+#' Generally best to just use the output from `ctrl_ref()` or `global_ref()`.
 #'
 #' @returns
 #'
@@ -68,20 +95,20 @@ median_correction <-
 #' @method median_correction tbl_df
 #' @exportS3Method oinkqc::median_correction
 #' @returns
-median_correction.tbl_df <- function(.data, meds) {
+median_correction.tbl_df <- function(.data, medians) {
   # calculate the medians for each 384-well plate
   ref_med <-
-    meds |>
+    medians |>
     # calculate the mean of all medians to scale by
     # and make a tibble that contains the OlinkID and the reference median
     dplyr::rowwise() |>
     dplyr::transmute(
       OlinkID = OlinkID,
-      ReferenceMedian = mean(dplyr::c_across(tidyselect::contains("Median")))
+      ReferenceMedian = mean(dplyr::c_across(tidyselect::contains("Median"))),
     )
 
   meds_correction <-
-    dplyr::left_join(x = meds, y = ref_med, by = dplyr::join_by(OlinkID)) |>
+    dplyr::left_join(x = medians, y = ref_med, by = dplyr::join_by(OlinkID)) |>
     dplyr::mutate(Correction = Median - ReferenceMedian)
 
   data_correction <-
@@ -99,11 +126,11 @@ median_correction.tbl_df <- function(.data, meds) {
 #' @method median_correction list
 #' @export
 #' @returns
-median_correction.list <- function(.data, meds) {
+median_correction.list <- function(.data, medians) {
   # calculate the medians for each 384-well plate
   ref_med <-
     purrr::reduce(
-      .x = meds,
+      .x = medians,
       .f = \(x, y) dplyr::left_join(x, y, by = dplyr::join_by(OlinkID))
     ) |> # left join all the run median and variance per each run
     # calculate the mean of all medians to scale by
@@ -116,7 +143,7 @@ median_correction.list <- function(.data, meds) {
 
   meds_correction <-
     purrr::map(
-      .x = meds,
+      .x = medians,
       .f = \(x) {
         dplyr::left_join(x = x, y = ref_med, by = dplyr::join_by(OlinkID)) |>
           dplyr::mutate(Correction = Median - ReferenceMedian)
