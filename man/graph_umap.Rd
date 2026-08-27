@@ -5,7 +5,7 @@
 \title{graph_umap}
 \usage{
 graph_umap(
-  data_umap,
+  .data,
   groups,
   arrow_size = 0.1,
   pt.size = 0.5,
@@ -14,6 +14,22 @@ graph_umap(
   label = FALSE,
   label.size = 15
 )
+}
+\arguments{
+\item{.data}{three (at least) column table
+\enumerate{
+\item UMAP 1
+\item UMAP 2
+\item Grouping variable used to color points
+}}
+
+\item{groups}{what column to suse when plotting}
+
+\item{arrow_size}{size to give repel arrows}
+
+\item{pt.size}{size to give arrow points}
+
+\item{arrowtip_size}{size to draw arro tpis at}
 }
 \description{
 graphing pretty umap graph

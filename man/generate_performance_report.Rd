@@ -25,8 +25,6 @@ outputs.}
 \item{output_dir}{path to where the report should be output}
 
 \item{report_name}{name to give the output report}
-
-\item{template_dir}{path to the report markdown template}
 }
 \value{
 Nothing, but writes a PDF named \code{report_name} to \code{output_dir}

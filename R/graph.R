@@ -350,11 +350,14 @@ umap_groups <- function(
 #' @title graph_umap
 #' @description graphing pretty umap graph
 #'
-#' @param data_umap
-#' @param groups
-#' @param arrow_size
-#' @param pt.size
-#' @param arrowtip_size
+#' @param .data three (at least) column table
+#'    1. UMAP 1
+#'    2. UMAP 2
+#'    3. Grouping variable used to color points
+#' @param groups what column to suse when plotting
+#' @param arrow_size size to give repel arrows
+#' @param pt.size size to give arrow points
+#' @param arrowtip_size size to draw arro tpis at
 #' @param cols
 #' @param label
 #' @param label.size
@@ -367,7 +370,7 @@ umap_groups <- function(
 #' @export
 #' @examples
 graph_umap <- function(
-  data_umap,
+  .data,
   groups,
   arrow_size = 0.1,
   pt.size = 0.5,
@@ -378,7 +381,7 @@ graph_umap <- function(
 ) {
   # graph the umap plot
   p <- ggplot2::ggplot(
-    data = data_umap,
+    data = .data,
     mapping = ggplot2::aes(x = UMAP1, y = UMAP2)
   ) +
     ggplot2::geom_point(mapping = aes(color = as.factor(groups)), size = 0.5) +
@@ -443,7 +446,7 @@ graph_umap <- function(
 #' @title plot_qc
 #' @description graph the QC performance of each plate
 #'
-#' @param data_i
+#' @param .data
 #'
 #' @returns
 #'

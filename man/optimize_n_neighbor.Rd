@@ -5,7 +5,7 @@
 \title{optimize_n_neighbor}
 \usage{
 optimize_n_neighbor(
-  data,
+  .data,
   groups = NULL,
   spread = 10,
   min_dist = 0.1,

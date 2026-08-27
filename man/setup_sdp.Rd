@@ -6,6 +6,9 @@
 \usage{
 setup_sdp(path)
 }
+\arguments{
+\item{path}{from in which to create the SDP hierarchy}
+}
 \value{
 Nothing, but at \code{path}, produces a structure matching
 that as defined in the OlinkHT Standard Data Package, e.g.
@@ -21,7 +24,7 @@ that as defined in the OlinkHT Standard Data Package, e.g.
 }\if{html}{\out{</div>}}
 }
 \description{
-Setup a SDP hiearchical file structure
+Setup a SDP hierarchical file structure
 }
 \examples{
 \dontrun{

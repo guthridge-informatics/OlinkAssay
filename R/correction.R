@@ -1,7 +1,7 @@
 #' @title ctrl_ref
 #' @description Calculate the default plate control batch correction
 #'
-#' @param data
+#' @param .data [`tibble::tibble`] with Olink data
 #'
 #' @returns
 #'
@@ -23,7 +23,7 @@ ctrl_ref <- function(.data) {
 #' @title global_ref
 #' @description To be used for Studies where proper randomization can be verified or where plate controls cannot be used for normalization
 #'
-#' @param data
+#' @param .data [`tibble::tibble`] with Olink data
 #'
 #' @returns
 #'
@@ -44,8 +44,8 @@ global_ref <- function(.data) {
 #' @title median_correction
 #' @description This function takes either global or plate control median frames and applies differences
 #'
-#' @param data
-#' @param meds
+#' @param .data [`tibble::tibble`] with Olink data
+#' @param meds [`tibble::tibble`] with the median levels of assay proteins
 #'
 #' @returns
 #'
@@ -57,7 +57,7 @@ global_ref <- function(.data) {
 #' @examples
 median_correction <-
   function(
-    object,
+    .data,
     ...
   ) {
     UseMethod("median_correction")
@@ -65,7 +65,7 @@ median_correction <-
 
 
 #' @rdname median_correction
-#' @method median_correction tibble
+#' @method median_correction tbl_df
 #' @exportS3Method oinkqc::median_correction
 #' @returns
 median_correction.tbl_df <- function(.data, meds) {
@@ -139,8 +139,9 @@ median_correction.list <- function(.data, meds) {
 #' @title batch_correction
 #' @description Main routing function for the batch correction and normalization
 #'
-#' @param data
-#' @param method
+#' @param .data [`tibble::tibble`] with Olink data
+#' @param method method to use with performing batch correction one of "median"
+#'  or "global median". (Default: "median")
 #'
 #' @returns
 #'
@@ -150,14 +151,14 @@ median_correction.list <- function(.data, meds) {
 #' @examples
 batch_correction <-
   function(
-    object,
+    .data,
     ...
   ) {
     UseMethod("batch_correction")
   }
 
 #' @rdname batch_correction
-#' @method batch_correction tibble
+#' @method batch_correction tbl_df
 #' @exportS3Method olinkqc::batch_correction
 #' @returns
 batch_correction.tbl_df <- function(

@@ -7,11 +7,11 @@
 olink_lvl2(.data, multifile = TRUE, proj_dir = NULL)
 }
 \arguments{
+\item{.data}{tibble or list of tibbles}
+
 \item{multifile}{bool}
 
 \item{proj_dir}{path to save to}
-
-\item{data}{tibble or list of tibbles}
 }
 \description{
 Level 2 QC Part 2

@@ -5,7 +5,7 @@
 \title{optimize_spread}
 \usage{
 optimize_spread(
-  data,
+  .data,
   groups,
   n_neighbor,
   min_dist = 0.1,

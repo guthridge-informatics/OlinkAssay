@@ -10,7 +10,6 @@
 #'  outputs.
 #' @param output_dir path to where the report should be output
 #' @param report_name name to give the output report
-#' @param template_dir path to the report markdown template
 #'
 #' @returns Nothing, but writes a PDF named `report_name` to `output_dir`
 #'

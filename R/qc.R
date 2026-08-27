@@ -103,7 +103,7 @@ olink_lvl1 <- function(
 #' @title olink_qc
 #' @description tallies the number of failed and passed assay and samples per each 96-well plate
 #'
-#' @param data [`tibble`][`tibble::tibble`] containing Olink data
+#' @param .data [`tibble`][`tibble::tibble`] containing Olink data
 #'
 #' @returns Named list with
 #' 1. `AssayOlinkQC`: table with assay-level quality control counts
@@ -139,7 +139,7 @@ olink_qc <- function(.data) {
 #' @title olink_lvl2_prep
 #' @description
 #'
-#' @param data a [`tibble`][`tibble::tibble`] containing batch-corrected Olink data
+#' @param .data a [`tibble`][`tibble::tibble`] containing batch-corrected Olink data
 #'
 #' @returns [`tibble::tibble`]
 #'
@@ -204,7 +204,7 @@ olink_lvl2_prep <- function(.data) {
 #' @title olink_lvl2
 #' @description Level 2 QC Part 2
 #'
-#' @param data tibble or list of tibbles
+#' @param .data tibble or list of tibbles
 #' @param multifile bool
 #' @param proj_dir path to save to
 #'

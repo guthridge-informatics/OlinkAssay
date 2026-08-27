@@ -7,11 +7,11 @@
 multifile_write(.data, file_extension = c("parquet", "csv"), proj_dir = NULL)
 }
 \arguments{
+\item{.data}{A named list of \code{\link[tibble:tibble]{tibble::tibble}}}
+
 \item{file_extension}{Output type: \code{"parquet"} or \code{"csv"} (default \code{"parquet"})}
 
 \item{proj_dir}{path to where the files should be saved in the standard data package output format}
-
-\item{data}{A named list of \code{\link[tibble:tibble]{tibble::tibble}}}
 }
 \value{
 None

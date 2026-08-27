@@ -6,6 +6,9 @@
 \usage{
 global_ref(.data)
 }
+\arguments{
+\item{.data}{\code{\link[tibble:tibble]{tibble::tibble}} with Olink data}
+}
 \description{
 To be used for Studies where proper randomization can be verified or where plate controls cannot be used for normalization
 }

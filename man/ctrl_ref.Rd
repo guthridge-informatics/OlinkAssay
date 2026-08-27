@@ -6,6 +6,9 @@
 \usage{
 ctrl_ref(.data)
 }
+\arguments{
+\item{.data}{\code{\link[tibble:tibble]{tibble::tibble}} with Olink data}
+}
 \description{
 Calculate the default plate control batch correction
 }

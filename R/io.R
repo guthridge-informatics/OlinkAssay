@@ -105,7 +105,7 @@ import_manifest <- function(
 #' @description Write multiple files into a list and name them based on the file name without file extension
 #' @details `multifile_write` encapsulates `import_olink_data` and `import_manifest` along with creating the directory
 #'
-#' @param data A named list of [`tibble::tibble`]
+#' @param .data A named list of [`tibble::tibble`]
 #' @param file_extension Output type: `"parquet"` or `"csv"` (default `"parquet"`)
 #' @param proj_dir path to where the files should be saved in the standard data package output format
 #'
@@ -210,8 +210,9 @@ olink_reader <- function(
 }
 
 #' @title setup_sdp
-#' @description Setup a SDP hiearchical file structure
+#' @description Setup a SDP hierarchical file structure
 #'
+#' @param path from in which to create the SDP hierarchy
 #' @returns Nothing, but at `path`, produces a structure matching
 #' that as defined in the OlinkHT Standard Data Package, e.g.
 #' ```
