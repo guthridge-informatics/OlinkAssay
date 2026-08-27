@@ -35,6 +35,7 @@ list with
 Setup project directory and import Olink data and manifest
 }
 \examples{
+\dontrun{
 olink_reader(
    input = "path/to/folder/with/manifest/and/parquet/files",
    output = "path/to/output",
@@ -42,4 +43,5 @@ olink_reader(
    sample_column = "Tube ID",
    project_column = "Project"
 )
+}
 }

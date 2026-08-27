@@ -6,11 +6,16 @@
 \alias{median_correction.list}
 \title{median_correction}
 \usage{
-median_correction(object, ...)
+median_correction(.data, ...)
 
-\method{median_correction}{tibble}(.data, meds)
+\method{median_correction}{tbl_df}(.data, meds)
 
 \method{median_correction}{list}(.data, meds)
+}
+\arguments{
+\item{.data}{\code{\link[tibble:tibble]{tibble::tibble}} with Olink data}
+
+\item{meds}{\code{\link[tibble:tibble]{tibble::tibble}} with the median levels of assay proteins}
 }
 \description{
 This function takes either global or plate control median frames and applies differences

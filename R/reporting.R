@@ -10,7 +10,6 @@
 #'  outputs.
 #' @param output_dir path to where the report should be output
 #' @param report_name name to give the output report
-#' @param template_dir path to the report markdown template
 #'
 #' @returns Nothing, but writes a PDF named `report_name` to `output_dir`
 #'
@@ -19,14 +18,15 @@
 #'
 #' @export
 #' @examples
-#' \dontrun{}
+#' \dontrun{
 #' generate_performance_report(
 #'    project_name = "Volcano Science Project",
 #'    correction_procedure = "median",
 #'    sdp_directory = "/home/user/volcano_project/sdp",
 #'    output_dir = "/home/user/reports",
 #'    report_name = "assay_performance_report.pdf"
-#' )
+#'  )
+#' }
 generate_performance_report <- function(
   project_name,
   correction_procedure,

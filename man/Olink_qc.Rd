@@ -7,7 +7,7 @@
 olink_qc(.data)
 }
 \arguments{
-\item{data}{\code{\link[tibble:tibble]{tibble}} containing Olink data}
+\item{.data}{\code{\link[tibble:tibble]{tibble}} containing Olink data}
 }
 \value{
 Named list with

@@ -5,7 +5,7 @@
 \title{optimize_min_dist}
 \usage{
 optimize_min_dist(
-  data,
+  .data,
   groups,
   spread,
   n_neighbor,

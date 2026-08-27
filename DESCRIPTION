@@ -14,7 +14,7 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 Config/roxygen2/version: 8.1.0
 Config/testthat/edition: 3
-NeedsCompilation: "no"
+NeedsCompilation: no
 URL: https://github.com/guthridge-informatics/olinkqc
 BugReports: https://github.com/guthridge-informatics/olinkqc/issues
 Language: en-US
@@ -36,8 +36,8 @@ Imports:
     readr,
     readxl,
     rlang,
-    rmarkdown,
     S4Vectors,
+    scales,
     stringr,
     SummarizedExperiment,
     tibble,

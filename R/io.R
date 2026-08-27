@@ -6,8 +6,9 @@
 #' @returns A named list of tibbles
 #' @export
 #' @examples
-#' \dontrun{}
+#' \dontrun{
 #' import_olink_data(input = "/path/to/data")
+#' }
 #'
 import_olink_data <- function(input) {
   files_run <- list.files(
@@ -45,13 +46,14 @@ import_olink_data <- function(input) {
 #'
 #' @export
 #' @examples
-#' \dontrun{}
+#' \dontrun{
 #' import_manifest(
 #'    input = "/path/to/data",
 #'    sample_column = `Tube ID`,
 #'    project_column = `Project`,
 #'    additional_columns = c(`Sample Type`)
 #' )
+#' }
 #'
 import_manifest <- function(
   manifest,
@@ -103,7 +105,7 @@ import_manifest <- function(
 #' @description Write multiple files into a list and name them based on the file name without file extension
 #' @details `multifile_write` encapsulates `import_olink_data` and `import_manifest` along with creating the directory
 #'
-#' @param data A named list of [`tibble::tibble`]
+#' @param .data A named list of [`tibble::tibble`]
 #' @param file_extension Output type: `"parquet"` or `"csv"` (default `"parquet"`)
 #' @param proj_dir path to where the files should be saved in the standard data package output format
 #'
@@ -172,6 +174,7 @@ multifile_write <- function(
 #'
 #' @export
 #' @examples
+#' \dontrun{
 #' olink_reader(
 #'    input = "path/to/folder/with/manifest/and/parquet/files",
 #'    output = "path/to/output",
@@ -179,6 +182,7 @@ multifile_write <- function(
 #'    sample_column = "Tube ID",
 #'    project_column = "Project"
 #' )
+#' }
 olink_reader <- function(
   input,
   output,
@@ -206,8 +210,9 @@ olink_reader <- function(
 }
 
 #' @title setup_sdp
-#' @description Setup a SDP hiearchical file structure
+#' @description Setup a SDP hierarchical file structure
 #'
+#' @param path from in which to create the SDP hierarchy
 #' @returns Nothing, but at `path`, produces a structure matching
 #' that as defined in the OlinkHT Standard Data Package, e.g.
 #' ```
@@ -223,8 +228,10 @@ olink_reader <- function(
 #'
 #' @export
 #' @examples
+#' \dontrun{
 #' tmp_path <- withr::local_tempfile()
 #' setup_sdp(path = tmp_path)
+#' }
 setup_sdp <- function(path) {
   purrr::walk(
     .x = c(

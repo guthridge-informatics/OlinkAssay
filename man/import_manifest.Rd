@@ -30,12 +30,13 @@ A \code{\link[tibble:tibble]{"tibble"}} containing only the the \code{sample_col
 Read in the manifest of samples for an Olink run
 }
 \examples{
-\dontrun{}
+\dontrun{
 import_manifest(
    input = "/path/to/data",
    sample_column = `Tube ID`,
    project_column = `Project`,
    additional_columns = c(`Sample Type`)
 )
+}
 
 }

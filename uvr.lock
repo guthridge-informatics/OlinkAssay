@@ -646,11 +646,11 @@ requires = [
 
 [[package]]
 name = "curl"
-version = "7.1.0"
+version = "8.0.0"
 source = "cran"
-raw_version = "7.1.0"
-url = "https://cran.r-project.org/src/contrib/curl_7.1.0.tar.gz"
-checksum = "md5:8af2ccbf5d85dc18866f45f1f26f348d"
+raw_version = "8.0.0"
+url = "https://cran.r-project.org/src/contrib/curl_8.0.0.tar.gz"
+checksum = "md5:11e42cdbfa575a081e5bf9a710ee76bd"
 
 [[package]]
 name = "data.table"
@@ -688,11 +688,11 @@ requires = [
 
 [[package]]
 name = "dbscan"
-version = "1.2.5"
+version = "1.2.6"
 source = "cran"
-raw_version = "1.2.5"
-url = "https://cran.r-project.org/src/contrib/dbscan_1.2.5.tar.gz"
-checksum = "md5:06839322223cedce3dc7891c554202d5"
+raw_version = "1.2.6"
+url = "https://cran.r-project.org/src/contrib/dbscan_1.2.6.tar.gz"
+checksum = "md5:edb50e67fba7fc8c731be69e4f694978"
 requires = [
     "generics",
     "Rcpp",

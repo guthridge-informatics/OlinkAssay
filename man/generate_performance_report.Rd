@@ -25,8 +25,6 @@ outputs.}
 \item{output_dir}{path to where the report should be output}
 
 \item{report_name}{name to give the output report}
-
-\item{template_dir}{path to the report markdown template}
 }
 \value{
 Nothing, but writes a PDF named \code{report_name} to \code{output_dir}
@@ -36,12 +34,13 @@ Generate a QC performance report for a Olink HT
 project.
 }
 \examples{
-\dontrun{}
+\dontrun{
 generate_performance_report(
    project_name = "Volcano Science Project",
    correction_procedure = "median",
    sdp_directory = "/home/user/volcano_project/sdp",
    output_dir = "/home/user/reports",
    report_name = "assay_performance_report.pdf"
-)
+ )
+}
 }

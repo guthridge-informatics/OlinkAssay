@@ -6,11 +6,17 @@
 \alias{batch_correction.list}
 \title{batch_correction}
 \usage{
-batch_correction(object, ...)
+batch_correction(.data, ...)
 
-\method{batch_correction}{tibble}(.data, method = c("median", "global median"))
+\method{batch_correction}{tbl_df}(.data, method = c("median", "global median"))
 
 \method{batch_correction}{list}(.data, method = c("median", "global median"))
+}
+\arguments{
+\item{.data}{\code{\link[tibble:tibble]{tibble::tibble}} with Olink data}
+
+\item{method}{method to use with performing batch correction one of "median"
+or "global median". (Default: "median")}
 }
 \description{
 Main routing function for the batch correction and normalization

@@ -1,6 +1,9 @@
 #' @export
 #' @import methods
 #' @importClassesFrom SummarizedExperiment SummarizedExperiment
+#'
+#' @param .data stuff
+#' @param ... other arguments to pass on
 .OlinkAssay <- setClass("OlinkAssay", contains = "SummarizedExperiment")
 
 #' @export
@@ -13,6 +16,12 @@ OlinkAssay <- function(.data, ...) {
 #' @title assay
 #' @description Get assay data for OlinkAssay object
 #'
+#' @param i name of the assay in `assays(x)` to retreive. If no name is provided
+#'    attempts to extract the assay named (in decending order) "ExtNPX_Corrected",
+#'.   "ExtNPX", "PCNormalizedNPX", "Correction", "NPX", "Count"
+#' @param withDimnames retain row and column names? (Default: TRUE)
+#'
+#' @inheritParams SummarizedExperiment::assay
 #' @export
 setGeneric("assay", function(x, ...) standardGeneric("assay"))
 

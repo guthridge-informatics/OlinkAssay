@@ -18,7 +18,7 @@
     "/home/milo/.uvr/r-versions",
     "/root/.uvr/r-versions"
   ],
-  "positron.r.interpreters.default": "/usr/lib/R/bin/R",
+  "positron.r.interpreters.default": "/Users/milo/.uvr/r-versions/4.6.1/bin/R",
   "r.rpath.linux": "/usr/lib/R/bin/R",
   "r.rpath.mac": "/Users/milo/.uvr/r-versions/4.6.1/bin/R",
   "r.rterm.linux": "/usr/lib/R/bin/R",

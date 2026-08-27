@@ -7,7 +7,7 @@
 olink_lvl2_prep(.data)
 }
 \arguments{
-\item{data}{a \code{\link[tibble:tibble]{tibble}} containing batch-corrected Olink data}
+\item{.data}{a \code{\link[tibble:tibble]{tibble}} containing batch-corrected Olink data}
 }
 \value{
 \code{\link[tibble:tibble]{tibble::tibble}}

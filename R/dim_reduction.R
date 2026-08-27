@@ -13,6 +13,7 @@
 #' @importFrom ggplot2 ggplot aes geom_point geom_smooth theme_classic
 #' @importFrom dplyr select across summarise
 #' @importFrom tidyselect where
+#' @importFrom stats loess
 #'
 #' @export
 #' @examples
@@ -40,7 +41,7 @@ vst_to_pca <- function(.data, exclude = NULL) {
   }
 
   # plot the scatter plots of the mean and variance of each protein
-  fit_lowess <- loess(Variance ~ Mean, data_vst, span = 0.2)
+  fit_lowess <- stats::loess(Variance ~ Mean, data_vst, span = 0.2)
 
   # graph the loess function in the plot of mean vs variance
   plot <-
@@ -79,7 +80,7 @@ vst_to_pca <- function(.data, exclude = NULL) {
 #' @title pca_to_umap
 #' @description Automatically find the best PCA dimensional cut-off for the subsequent UMAP
 #'
-#' @param data
+#' @param .data
 #'
 #' @returns
 #'
@@ -109,7 +110,7 @@ pca_to_umap <- function(.data) {
 #' @title optimize_n_neighbor
 #' @description Optimization function for n_neighbors by setting the spread = 10, min_dist = 0.1 as default by can be changed as needed
 #'
-#' @param data
+#' @param .data
 #' @param groups
 #' @param spread
 #' @param min_dist
@@ -130,7 +131,7 @@ pca_to_umap <- function(.data) {
 #' @export
 #' @examples
 optimize_n_neighbor <- function(
-  data,
+  .data,
   groups = NULL,
   spread = 10,
   min_dist = 0.1,
@@ -145,7 +146,7 @@ optimize_n_neighbor <- function(
     .x = seq(min, max, step),
     .f = \(n_neighbors) {
       umap_cyto <- uwot::umap(
-        data,
+        .data,
         spread = spread,
         min_dist = min_dist,
         n_neighbors = n_neighbors,
@@ -180,7 +181,7 @@ optimize_n_neighbor <- function(
 #' @title optimize_spread
 #' @description Optimization function for spread after n_neighbor parameter has been fixed, by default this function uses min_dist of 0.1
 #'
-#' @param data
+#' @param .data
 #' @param groups
 #' @param n_neighbor
 #' @param min_dist
@@ -201,7 +202,7 @@ optimize_n_neighbor <- function(
 #' @export
 #' @examples
 optimize_spread <- function(
-  data,
+  .data,
   groups,
   n_neighbor,
   min_dist = 0.1,
@@ -216,7 +217,7 @@ optimize_spread <- function(
     .x = seq(min, max, step),
     .f = \(spread) {
       umap_cyto <- uwot::umap(
-        data,
+        .data,
         spread = spread,
         min_dist = min_dist,
         n_neighbors = n_neighbors,
@@ -251,7 +252,7 @@ optimize_spread <- function(
 #' @title optimize_min_dist
 #' @description The final optimization function that is to fix the min_dist after n_neighbor and spread parameters have been fixed
 #'
-#' @param data
+#' @param .data
 #' @param groups
 #' @param spread
 #' @param n_neighbor
@@ -272,7 +273,7 @@ optimize_spread <- function(
 #' @export
 #' @examples
 optimize_min_dist <- function(
-  data,
+  .data,
   groups,
   spread,
   n_neighbor,
