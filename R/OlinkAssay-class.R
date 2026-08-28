@@ -22,6 +22,10 @@ OlinkAssay <- function(
   ),
   ...
 ) {
+  # once the original matrix is torn, it's much morley
+  # difficult to get the control data, and it is cheap to
+  # calc and store now, so just go ahead and get those
+  # assay medians
   assay_medians <- ctrl_ref(npxData)
   global_medians <- global_ref(npxData)
 
@@ -414,4 +418,17 @@ setMethod(
 
     x
   }
+)
+
+#' @title concat
+#' @description
+#' @export
+setGeneric("concat", function(x, ...) standardGeneric("concat"))
+
+#' @export
+#' @importFrom SummarizedExperiment assay
+setMethod(
+  f = "concat",
+  signature = "OlinkAssay",
+  definition = function(x, y, batch_correction_method = NULL) {}
 )
