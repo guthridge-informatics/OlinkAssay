@@ -10,8 +10,10 @@
 #' @importFrom tidyselect everything
 #' @importFrom tidyr pivot_longer
 #' @examples
+#' \dontrun{
 #' data(mtcars)
 #' .unique_rowvals(mtcars)
+#' }
 .unique_rowvals <- function(.data) {
   .data |>
     dplyr::transmute(

@@ -5,12 +5,13 @@ S3method(median_correction,list)
 S3method(oinkqc::median_correction,tbl_df)
 S3method(olinkqc::batch_correction,tbl_df)
 export(.OlinkAssay)
-export(OlinkAssay)
+export(OlinkAssayFromNPX)
 export(as_SummarizedExperiment)
 export(assay)
 export(batch_correction)
 export(batch_correction_umap_prep)
 export(colData)
+export(concat)
 export(ctrl_ref)
 export(generate_performance_report)
 export(global_ref)
@@ -41,12 +42,16 @@ export(vst_to_pca)
 exportClasses(OlinkAssay)
 exportMethods(assay)
 exportMethods(colData)
+exportMethods(concat)
 exportMethods(medianCorrection)
 exportMethods(npx)
 exportMethods(rowData)
 import(methods)
 importClassesFrom(SummarizedExperiment,SummarizedExperiment)
-importFrom(S4Vectors,mcols)
+importFrom(S4Vectors,
+  DataFrame,
+  mcols
+)
 importFrom(SummarizedExperiment,
   SummarizedExperiment,
   assay
@@ -128,7 +133,8 @@ importFrom(scales,percent)
 importFrom(stats,
   loess,
   na.omit,
-  prcomp
+  prcomp,
+  setNames
 )
 importFrom(stringr,str_glue)
 importFrom(tibble,as_tibble)

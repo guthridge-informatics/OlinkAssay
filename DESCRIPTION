@@ -1,6 +1,6 @@
 Package: OlinkAssay
 Title: Olink HT quality control, processing, and organization
-Version: 0.0.0.9000
+Version: 0.1.0.0000
 Authors@R: c(
     person(given="Ben", family="Jones", email = "ben.jones@omrf.org", role = c("aut")),
     person(given="Miles", family="Smith", email = "miles.smith@omrf.org", role = c("aut", "cre"), comment = c(ORCID = "0000-0003-0651-809X")),

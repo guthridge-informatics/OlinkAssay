@@ -9,9 +9,30 @@
   contains = "SummarizedExperiment"
 )
 
+OlinkAssay <- function(
+  assays = SimpleList(),
+  rowData = NULL,
+  rowRanges = NULL,
+  colData = DataFrame(),
+  metadata = list(),
+  checkDimnames = TRUE
+) {
+  .OlinkAssay(
+    SummarizedExperiment(
+      assays = assays,
+      rowData = rowData,
+      rowRanges = rowRanges,
+      colData = colData,
+      metadata = metadata,
+      checkDimnames = checkDimnames
+    )
+  )
+}
+
 #' @export
 #' @importFrom SummarizedExperiment SummarizedExperiment
-OlinkAssay <- function(
+#' @importFrom S4Vectors DataFrame
+OlinkAssayFromNPX <- function(
   npxData,
   colData = NULL,
   assay_tables = c(
@@ -20,14 +41,26 @@ OlinkAssay <- function(
     "PCNormalizedNPX",
     "NPX"
   ),
+  verbose = FALSE,
   ...
 ) {
-  # once the original matrix is torn, it's much morley
-  # difficult to get the control data, and it is cheap to
-  # calc and store now, so just go ahead and get those
-  # assay medians
-  assay_medians <- ctrl_ref(npxData)
-  global_medians <- global_ref(npxData)
+  if (verbose) {
+    message("Calculating assay medians...")
+  }
+  assay_medians <- S4Vectors::DataFrame(ctrl_ref(npxData))
+  if (verbose) {
+    message("Calculating global medians...")
+  }
+  global_medians <- S4Vectors::DataFrame(global_ref(npxData))
+
+  if (verbose) {
+    message("Extracting metadata")
+  }
+  plate_ref <- stringr::str_remove(
+    string = npxData[["PlateID"]],
+    pattern = "_.*$"
+  ) |>
+    unique()
 
   .metadata <- dplyr::select(
     npxData,
@@ -44,8 +77,14 @@ OlinkAssay <- function(
       cols = tidyselect::everything()
     ) |>
     tibble::deframe() |>
-    as.list()
-
+    as.list() |>
+    # look, if you've got a better way to name a list using a variable
+    # but actually evaluate the variable I'd love to see it
+    purrr::map(.f = \(x) {
+      item <- list(x)
+      names(item) <- plate_ref
+      item
+    })
   .metadata[["AssayMedians"]] <- assay_medians
   .metadata[["GlobalMedians"]] <- global_medians
 
@@ -83,10 +122,16 @@ OlinkAssay <- function(
     ) |>
     tibble::column_to_rownames(var = "Assay")
 
+  if (verbose) {
+    message("Extracting assay data")
+  }
   sample_df <-
     purrr::map(
       .x = assay_tables,
       .f = \(x) {
+        if (verbose) {
+          message(glue::glue("Pivoting {x}"))
+        }
         npxData |>
           dplyr::select(
             -Panel,
@@ -109,6 +154,9 @@ OlinkAssay <- function(
     ) |>
     purrr::set_names(assay_tables)
 
+  if (verbose) {
+    message("Extracting coldata")
+  }
   .coldata <-
     npxData |>
     .extract_dfs(
@@ -128,6 +176,9 @@ OlinkAssay <- function(
     dplyr::distinct()
 
   if (!is.null(colData)) {
+    if (verbose) {
+      message("Adding external metadata")
+    }
     dplyr::left_join(
       x = .coldata,
       y = colData,
@@ -138,6 +189,9 @@ OlinkAssay <- function(
     tibble::column_to_rownames(.data = .coldata, var = "SampleID") |>
     S4Vectors::DataFrame()
 
+  if (verbose) {
+    message("Extracting rowdata")
+  }
   .rowdata <-
     npxData |>
     .extract_dfs(
@@ -158,6 +212,9 @@ OlinkAssay <- function(
     tibble::column_to_rownames(var = "Assay") |>
     S4Vectors::DataFrame()
 
+  if (verbose) {
+    message("Creating object")
+  }
   se <- SummarizedExperiment::SummarizedExperiment(
     assays = sample_df,
     rowData = .rowdata,
@@ -269,63 +326,6 @@ setMethod(
 
 
 #' @export
-#' @importFrom arrow read_parquet
-readFromDisk <- function(
-  npx_file = NULL,
-  metadata_file = NULL,
-  metadata_sheet = 1,
-  sample_column = "SampleID",
-  project_column = "Project",
-  additional_columns = NULL
-) {
-  if (is.character(npx_file)) {
-    df <- arrow::read_parquet(npx_file)
-  } else {
-    df <- S4Vectors::DataFrame()
-  }
-
-  if (is.character(metadata_file)) {
-    ext <- stringr::str_split_i(
-      string = metadata_file,
-      pattern = .Platform$file.sep,
-      i = -1
-    ) |>
-      stringr::str_split_i(pattern = "\\.", i = -1)
-
-    if (!is.null(sample_column)) {
-      sample_column <- rlang::sym(sample_column)
-    }
-    if (!is.null(project_column)) {
-      project_column <- rlang::sym(project_column)
-    }
-
-    if (!is.null(additional_columns)) {
-      loc <- tidyselect::eval_select(
-        rlang::expr(additional_columns),
-        data = manifest
-      )
-    } else {
-      loc <- NULL
-    }
-
-    md <- switch(
-      EXPR = ext,
-      "xlsx" = readxl::read_excel(metadata_file, sheet = metadata_sheet),
-      "csv" = readr::read_csv(metadata_file)
-    ) |>
-      dplyr::select(
-        SampleID = {{ sample_column }},
-        Project = {{ project_column }},
-        loc
-      )
-  } else {
-    md <- NULL
-  }
-
-  se <- OlinkAssay(npxData = df, colData = md)
-}
-
-#' @export
 setGeneric("medianCorrection", function(x, ...) {
   standardGeneric("medianCorrection")
 })
@@ -348,9 +348,11 @@ setMethod(
 
     median_means <-
       correction_values |>
+      tibble::as_tibble() |>
       dplyr::select(-Variance) |>
       tidyr::pivot_wider(
         names_from = "PlateRef",
+        names_glue = "{PlateRef}_median",
         values_from = "Median"
       ) |>
       dplyr::rowwise() |>
@@ -363,7 +365,7 @@ setMethod(
 
     meds_correction <-
       dplyr::left_join(
-        x = correction_values,
+        x = tibble::as_tibble(correction_values),
         y = median_means,
         by = dplyr::join_by(OlinkID)
       ) |>
@@ -381,7 +383,7 @@ setMethod(
       ) |>
       dplyr::select(SampleID, PlateRef)
 
-    npx_values <- assay(x, i = "ExtNPX") |>
+    npx_values <- SummarizedExperiment::assay(x, i = "ExtNPX") |>
       tibble::rownames_to_column(var = "assay") |>
       tidyr::pivot_longer(
         -assay,
@@ -420,15 +422,95 @@ setMethod(
   }
 )
 
-#' @title concat
-#' @description
 #' @export
 setGeneric("concat", function(x, ...) standardGeneric("concat"))
 
 #' @export
-#' @importFrom SummarizedExperiment assay
+#' @importFrom S4Vectors mcols
+#' @importFrom stats setNames
 setMethod(
   f = "concat",
   signature = "OlinkAssay",
-  definition = function(x, y, batch_correction_method = NULL) {}
+  definition = function(
+    x,
+    y,
+    batch_correction_method = NULL
+  ) {
+    concat_coldata <- rbind(colData(x), colData(y))
+    if (all(rownames(rowData(x)) == rownames(rowData(y)))) {
+      concat_rowdata <- rowData(x)
+    } else {
+      missing_in_x <- rownames(rowData(y))[
+        !rownames(rowData(y)) %in% rownames(rowData(x))
+      ]
+      concat_rowdata <- rbind(rowData(x), rowData(y)[, missing_in_x])
+    }
+
+    # merge metadata
+    single_value_cols <- c(
+      "Panel",
+      "SoftwareVersion",
+      "SoftwareVersion",
+      "SoftwareName",
+      "PanelDataArchiveVersion",
+      "PreProcessingVersion",
+      "PreProcessingSoftware",
+      "InstrumentType"
+    )
+    md_list <- purrr::map(
+      .x = single_value_cols,
+      .f = \(z) {
+        c(metadata(x)[[z]], metadata(y)[[z]])
+      }
+    ) |>
+      stats::setNames(single_value_cols)
+
+    md_list[["AssayMedians"]] <- rbind(
+      metadata(x)[["AssayMedians"]],
+      metadata(y)[["AssayMedians"]]
+    )
+    md_list[["GlobalMedians"]] <- rbind(
+      metadata(x)[["GlobalMedians"]],
+      metadata(y)[["GlobalMedians"]]
+    )
+
+    # `base_assays` being those that are present when naive data
+    # is first imported. If we are merging data, I am not yet sure
+    # that merging already corrected data should be included and am
+    # instead relying on repeating any previous corrections.
+    # will have to test
+    base_assays <- c("Count", "ExtNPX", "PCNormalizedNPX", "NPX")
+    merged_assays <- purrr::map(
+      .x = base_assays,
+      .f = \(z) {
+        merge(assay(x, i = z), assay(y, i = z), by = "row.names") |>
+          tibble::column_to_rownames("Row.names")
+      }
+    ) |>
+      purrr::set_names(base_assays)
+
+    concat_oa <- OlinkAssay(
+      assays = merged_assays,
+      colData = concat_coldata,
+      rowData = `rownames<-`(concat_rowdata, NULL),
+      metadata = md_list
+    )
+
+    if (!is.null(batch_correction_method)) {
+      concat_oa <- medianCorrection(concat_oa, method = batch_correction_method)
+    }
+
+    concat_oa
+  }
 )
+
+reshape_medians_tbl <- function(.data) {
+  .data |>
+    tibble::as_tibble() |>
+    dplyr::select(-Variance) |>
+    tidyr::pivot_wider(
+      names_from = "PlateRef",
+      names_glue = "{PlateRef}_median",
+      values_from = "Median"
+    )
+}

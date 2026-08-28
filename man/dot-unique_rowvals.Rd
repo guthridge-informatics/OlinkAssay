@@ -17,6 +17,8 @@ distinct values in each
 Return the unique number of values in each column
 }
 \examples{
+\dontrun{
 data(mtcars)
 .unique_rowvals(mtcars)
+}
 }

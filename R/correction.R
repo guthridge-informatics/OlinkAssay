@@ -104,7 +104,10 @@ median_correction.tbl_df <- function(.data, medians) {
     dplyr::rowwise() |>
     dplyr::transmute(
       OlinkID = OlinkID,
-      ReferenceMedian = mean(dplyr::c_across(tidyselect::contains("Median"))),
+      ReferenceMedian = mean(dplyr::c_across(tidyselect::contains(
+        "median",
+        ignore.case = TRUE
+      ))),
     )
 
   meds_correction <-
