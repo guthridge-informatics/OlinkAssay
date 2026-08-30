@@ -15,9 +15,9 @@ Essentially, there's a good chance that right now that this thing is broken and 
 
 ## Installation
 
-You can install the development version of olinkqc from [GitHub](https://github.com/) with:
+You can install the development version of `{OlinkAssay}` from [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("pak")
-pak::pak("guthridge-informatics/olinkqc")
+pak::pak("guthridge-informatics/OlinkAssay")
 ```
