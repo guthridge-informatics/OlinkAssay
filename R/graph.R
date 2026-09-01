@@ -226,7 +226,7 @@ umap_snn <- function(
 #' @title umap_groups
 #' @description graph the clean reworked umap
 #'
-#' @param data
+#' @param .data
 #' @param groups
 #' @param eps
 #' @param minPts
@@ -252,7 +252,7 @@ umap_snn <- function(
 #' @export
 #' @examples
 umap_groups <- function(
-  data,
+  .data,
   groups,
   eps = 7,
   minPts = 10,
@@ -267,10 +267,10 @@ umap_groups <- function(
   n_neighbors = NA
 ) {
   if (is.na(n_neighbors)) {
-    n_neighbors <- nrow(data) / 10
+    n_neighbors <- nrow(.data) / 10
   }
   dat_umap <- uwot::umap(
-    data,
+    .data,
     spread = spread,
     min_dist = min_dist,
     n_neighbors = n_neighbors,

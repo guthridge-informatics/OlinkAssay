@@ -30,7 +30,9 @@
     )
 }
 
-#' Title
+#' @title .extract_dfs
+#' @description Remove controls for either assays, samples, or both from
+#'  the initial NPX dataframe
 #'
 #' @param df
 #' @param filter_assay_controls

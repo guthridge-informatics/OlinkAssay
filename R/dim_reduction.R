@@ -288,7 +288,7 @@ optimize_min_dist <- function(
     .x = seq(min, max, step),
     .f = \(min_dist) {
       umap_cyto <- uwot::umap(
-        data,
+        .data,
         spread = spread,
         min_dist = min_dist,
         n_neighbors = n_neighbors,
@@ -299,7 +299,7 @@ optimize_min_dist <- function(
         dplyr::rename("UMAP1" = "V1", "UMAP2" = "V2")
 
       plot_0 <- ggplot2::ggplot(
-        data = dat_umap,
+        .data = dat_umap,
         mapping = ggplot2::aes(
           x = UMAP1,
           y = UMAP2
