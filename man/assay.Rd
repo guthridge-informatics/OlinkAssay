@@ -2,9 +2,12 @@
 % Please edit documentation in R/OlinkAssay-class.R
 \name{assay}
 \alias{assay}
+\alias{assay,OlinkAssay-method}
 \title{assay}
 \usage{
 assay(x, ...)
+
+\S4method{assay}{OlinkAssay}(x, i = NULL, withDimnames = TRUE)
 }
 \arguments{
 \item{x}{
@@ -20,12 +23,16 @@ assay(x, ...)
     For other accessors, ignored.
   }
 
-\item{i}{name of the assay in \code{assays(x)} to retreive. If no name is provided
-attempts to extract the assay named (in decending order) "ExtNPX_Corrected",
-.   "ExtNPX", "PCNormalizedNPX", "Correction", "NPX", "Count"}
+\item{i}{name of the assay in \code{assays(x)} to retreive.}
 
 \item{withDimnames}{retain row and column names? (Default: TRUE)}
 }
 \description{
 Get assay data for OlinkAssay object
+}
+\details{
+Works the same as that for \code{\link[SummarizedExperiment:assay]{SummarizedExperiment::assay}} except that
+if a value for \code{i} is not provided, \code{\link{assay}} attempts to extract
+the assay named (in decending order) "ExtNPX_Corrected", "ExtNPX",
+"PCNormalizedNPX", "Correction", "NPX", "Count"
 }

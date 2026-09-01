@@ -144,6 +144,7 @@ olink_qc <- function(.data) {
 #' @returns [`tibble::tibble`]
 #'
 #' @importFrom dplyr mutate filter group_by summarise case_when select left_join
+#' @importFrom stats median na.omit quantile sd
 #' @export
 #' @examples
 olink_lvl2_prep <- function(.data) {
@@ -158,8 +159,8 @@ olink_lvl2_prep <- function(.data) {
     dplyr::filter(SampleType == "NEGATIVE_CONTROL") |>
     dplyr::group_by(Assay, OlinkID) |>
     dplyr::summarise(
-      median_nc = median(stats::na.omit(LogProtExp)),
-      iqr_nc = as.numeric(quantile(stats::na.omit(LogProtExp), 0.75)),
+      median_nc = stats::median(stats::na.omit(LogProtExp)),
+      iqr_nc = as.numeric(stats::quantile(stats::na.omit(LogProtExp), 0.75)),
       .groups = 'drop'
     )
 
@@ -168,7 +169,7 @@ olink_lvl2_prep <- function(.data) {
     dplyr::filter(SampleType == "PLATE_CONTROL") |>
     dplyr::group_by(Assay, OlinkID) |>
     dplyr::summarise(
-      pc_cv = 100 * sd(LogProtExp) / mean(LogProtExp),
+      pc_cv = 100 * stats::sd(LogProtExp) / mean(LogProtExp),
       .groups = 'drop'
     ) |>
     dplyr::mutate(
@@ -261,7 +262,7 @@ olink_lvl2 <- function(.data, multifile = TRUE, proj_dir = NULL) {
     ) |>
     dplyr::select(-c(`Below LLOD`, `Below LLOQ`))
 
-  data <- dplyr::left_join(
+  .data <- dplyr::left_join(
     .data,
     dplyr::select(ht_scaled_npx_assay, OlinkID, assay_level_qc),
     by = dplyr::join_by(OlinkID)
@@ -271,8 +272,8 @@ olink_lvl2 <- function(.data, multifile = TRUE, proj_dir = NULL) {
     dir.create(path = lvl2_output_dir, recursive = TRUE)
   }
   arrow::write_parquet(
-    data,
+    .data,
     sink = stringr::str_glue("{lvl2_output_dir}/Level_2_SDP.parquet")
   ) # write the parquet files of the level 2
-  data
+  .data
 }

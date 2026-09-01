@@ -6,7 +6,7 @@
 #' @returns
 #'
 #' @importFrom dplyr filter group_by summarize
-#' @importFrom stats na.omit
+#' @importFrom stats na.omit median var
 #'
 #' @export
 #' @examples
@@ -38,6 +38,7 @@ ctrl_ref <- function(.data) {
 #' @returns
 #'
 #' @importFrom dplyr filter group_by summarise
+#' @importFrom stats median var
 #'
 #' @export
 #' @examples
@@ -55,8 +56,8 @@ global_ref <- function(.data) {
   ) |> # filter down to just the samples and the assay
     dplyr::group_by(OlinkID) |> # grouped it by just the OlinkID
     dplyr::summarise(
-      Median = median(stats::na.omit(ExtNPX)),
-      Variance = var(stats::na.omit(ExtNPX))
+      Median = stats::median(stats::na.omit(ExtNPX)),
+      Variance = stats::var(stats::na.omit(ExtNPX))
     ) |>
     dplyr::mutate(PlateRef = plate_ref)
 }
@@ -93,7 +94,7 @@ median_correction <-
 
 #' @rdname median_correction
 #' @method median_correction tbl_df
-#' @exportS3Method oinkqc::median_correction
+#' @exportS3Method OlinkAssay::median_correction
 #' @returns
 median_correction.tbl_df <- function(.data, medians) {
   # calculate the medians for each 384-well plate
@@ -127,6 +128,7 @@ median_correction.tbl_df <- function(.data, medians) {
 
 #' @rdname median_correction
 #' @method median_correction list
+#' @exportS3Method OlinkAssay::median_correction
 #' @export
 #' @returns
 median_correction.list <- function(.data, medians) {
@@ -189,7 +191,7 @@ batch_correction <-
 
 #' @rdname batch_correction
 #' @method batch_correction tbl_df
-#' @exportS3Method olinkqc::batch_correction
+#' @exportS3Method OlinkAssay::batch_correction
 #' @returns
 batch_correction.tbl_df <- function(
   .data,
@@ -210,6 +212,7 @@ batch_correction.tbl_df <- function(
 
 #' @rdname batch_correction
 #' @method batch_correction list
+#' @exportS3Method OlinkAssay::batch_correction
 #' @export
 #' @returns
 batch_correction.list <- function(

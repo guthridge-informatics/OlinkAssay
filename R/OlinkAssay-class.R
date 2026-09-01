@@ -1,37 +1,101 @@
-#' @export
+#### class definition ####
+#' @title OlinkAssay
+#' @description An S4 class to represent data from one or more Olink HT assays
 #' @import methods
 #' @importClassesFrom SummarizedExperiment SummarizedExperiment
 #'
-#' @param .data stuff
-#' @param ... other arguments to pass on
-.OlinkAssay <- setClass(
+#' @slot assays a [`SimpleList`][`S4Vectors::SimpleList`] of feature-by sample
+#'  [`DataFrames`][`S4Vectors::DataFrame`]. Must have
+#'  "Count", "ExtNPX", "NPX" data
+#' @slot rowData [`DataFrame`][`S4Vectors::DataFrame`] with feature metadata
+#' @slot colData [`DataFrame`][`S4Vectors::DataFrame`] with sample metadata
+#' @slot metadata list with assay-level metadata. Data is retained per-plate/run.
+#'  Per-plate assay means are stored here
+#'  under "AssayMedians" and "GlobalMedians"
+#'
+#' @name OlinkAssay
+#' @export
+#'
+setClass(
   Class = "OlinkAssay",
-  contains = "SummarizedExperiment"
+  contains = "SummarizedExperiment",
+  representation(
+    negativeControls = "DataFrame",
+    plateControls = "DataFrame"
+  ),
+  prototype(
+    SummarizedExperiment(),
+    negativeControls = new("DFrame"),
+    plateControls = new("DFrame")
+  )
 )
 
-OlinkAssay <- function(
-  assays = SimpleList(),
-  rowData = NULL,
-  rowRanges = NULL,
-  colData = DataFrame(),
-  metadata = list(),
-  checkDimnames = TRUE
+#### constructors ####
+new_OlinkAssay <- function(
+  names,
+  assays,
+  rowData,
+  colData,
+  metadata,
+  negativeControls,
+  plateControls
 ) {
-  .OlinkAssay(
-    SummarizedExperiment(
-      assays = assays,
-      rowData = rowData,
-      rowRanges = rowRanges,
-      colData = colData,
-      metadata = metadata,
-      checkDimnames = checkDimnames
-    )
+  new(
+    "OlinkAssay",
+    NAMES = names,
+    assays = assays,
+    elementMetadata = rowData,
+    colData = colData,
+    metadata = metadata,
+    negativeControls = negativeControls,
+    plateControls = plateControls
   )
 }
 
+OlinkAssay <- function(
+  assays = Assays(),
+  rowData = DataFrame(),
+  colData = DataFrame(),
+  metadata = list(),
+  negativeControls = DataFrame(),
+  plateControls = DataFrame()
+) {
+  first_assay <- assays@data[[1]]
+  if (!all(colnames(first_assay) == rownames(colData))) {
+    stop(
+      "Names (likely SampleIDs) do not match between the Assay columns and colData rows"
+    )
+  }
+  if (!all(rownames(first_assay) == rownames(rowData))) {
+    stop(
+      "Names (likely protein names) do not match between the Assay rows and rowData rows"
+    )
+  }
+  new_OlinkAssay(
+    names = rownames(assays@data[[1]]),
+    assays = assays,
+    rowData = rowData,
+    colData = colData,
+    metadata = metadata,
+    negativeControls = negativeControls,
+    plateControls = plateControls
+  )
+}
+
+#' @title OlinkAssayFromNPX
+#' @description Convert data from an NPX parquet file to an [`OlinkAssay`] object
+#'
+#' @param npxData a [`tibble`][`tibble::tibble`] with NPX data
+#' @param colData a [`tibble`][`tibble::tibble`] with extra sample metadata to store
+#'  in the `colData` slot.
+#' @param assay_tables A list of columns in `npxData` to store
+#'  in the `assays` slot. (Default: "Count", "ExtNPX", "PCNormalizedNPX", "NPX")
+#' @param verbose Should extra information about conversion progress be shown? (Default: FALSE)
+#'
 #' @export
+#' @returns an [`OlinkAssay`][`OlinkAssay::OlinkAssay`] object
 #' @importFrom SummarizedExperiment SummarizedExperiment
-#' @importFrom S4Vectors DataFrame
+#' @importFrom S4Vectors DataFrame SimpleList
 OlinkAssayFromNPX <- function(
   npxData,
   colData = NULL,
@@ -85,6 +149,15 @@ OlinkAssayFromNPX <- function(
       names(item) <- plate_ref
       item
     })
+
+  .metadata[["PlateRef"]] <- stringr::str_split_i(
+    string = npxData[["PlateID"]],
+    pattern = "_",
+    i = 1
+  ) |>
+    unique()
+  # should these, along with the plate and negative controls below,
+  # be stored in slots instead? Seems like I'm just dumping a lot in `metadata`
   .metadata[["AssayMedians"]] <- assay_medians
   .metadata[["GlobalMedians"]] <- global_medians
 
@@ -121,6 +194,53 @@ OlinkAssayFromNPX <- function(
       values_from = "SampleBlockQCFail"
     ) |>
     tibble::column_to_rownames(var = "Assay")
+
+  data_cols <- c(
+    "Count",
+    "ExtNPX",
+    "NPX",
+    "PCNormalizedNPX",
+    "ExtNPX_Corrected",
+    "LogProtExp",
+    "LogProtExp_Raw"
+  )
+
+  # TODO: Should these include the assay controls? E.g. "Extension control 1", "Incubation control 1"...
+  negative_control_data <-
+    dplyr::filter(
+      .data = npxData,
+      SampleType == "NEGATIVE_CONTROL"
+    ) |>
+    dplyr::select(
+      Assay,
+      OlinkID,
+      PlateID,
+      tidyselect::any_of(data_cols)
+    ) |>
+    dplyr::mutate(
+      Assay = as.factor(Assay), # not strictly necessary, but given that there's a set number of Assay names, seems appropriate
+      PlateID = stringr::str_remove(string = PlateID, pattern = "_plate[0-9]$")
+    ) |>
+    dplyr::rename(PlateRef = PlateID) |>
+    S4Vectors::DataFrame()
+
+  plate_control_data <-
+    dplyr::filter(
+      .data = npxData,
+      SampleType == "PLATE_CONTROL"
+    ) |>
+    dplyr::select(
+      Assay,
+      OlinkID,
+      PlateID,
+      tidyselect::any_of(data_cols)
+    ) |>
+    dplyr::mutate(
+      Assay = as.factor(Assay),
+      PlateID = stringr::str_remove(string = PlateID, pattern = "_plate[0-9]$")
+    ) |>
+    dplyr::rename(PlateRef = PlateID) |>
+    S4Vectors::DataFrame()
 
   if (verbose) {
     message("Extracting assay data")
@@ -179,7 +299,7 @@ OlinkAssayFromNPX <- function(
     if (verbose) {
       message("Adding external metadata")
     }
-    dplyr::left_join(
+    .coldata <- dplyr::left_join(
       x = .coldata,
       y = colData,
       by = dplyr::join_by("SampleID" == "SampleID")
@@ -215,15 +335,18 @@ OlinkAssayFromNPX <- function(
   if (verbose) {
     message("Creating object")
   }
-  se <- SummarizedExperiment::SummarizedExperiment(
-    assays = sample_df,
+
+  OlinkAssay(
+    assays = SummarizedExperiment::Assays(sample_df),
     rowData = .rowdata,
     colData = .coldata,
-    metadata = .metadata
+    metadata = .metadata,
+    negativeControls = negative_control_data,
+    plateControls = plate_control_data
   )
-  .OlinkAssay(se)
 }
 
+#### object validation ####
 S4Vectors::setValidity2("OlinkAssay", function(object) {
   msg <- NULL
 
@@ -241,18 +364,22 @@ S4Vectors::setValidity2("OlinkAssay", function(object) {
   }
 })
 
+#### assay getter ####
 #' @title assay
 #' @description Get assay data for OlinkAssay object
+#' @details Works the same as that for [`SummarizedExperiment::assay`] except that
+#'  if a value for `i` is not provided, [`OlinkAssay::assay`] attempts to extract
+#'  the assay named (in decending order) "ExtNPX_Corrected", "ExtNPX",
+#'  "PCNormalizedNPX", "Correction", "NPX", "Count"
 #'
-#' @param i name of the assay in `assays(x)` to retreive. If no name is provided
-#'    attempts to extract the assay named (in decending order) "ExtNPX_Corrected",
-#'.   "ExtNPX", "PCNormalizedNPX", "Correction", "NPX", "Count"
+#' @param i name of the assay in `assays(x)` to retreive.
 #' @param withDimnames retain row and column names? (Default: TRUE)
 #'
 #' @inheritParams SummarizedExperiment::assay
 #' @export
 setGeneric("assay", function(x, ...) standardGeneric("assay"))
 
+#' @rdname assay
 #' @export
 #' @importFrom SummarizedExperiment assay
 setMethod(
@@ -266,35 +393,33 @@ setMethod(
     if (is.null(i)) {
       i <- intersect(
         c(
+          "ExtNPX_Corrected",
           "ExtNPX",
+          "LogProtExp",
           "PCNormalizedNPX",
           "NPX",
           "Count"
         ),
-        colnames(rowData(x))
+        assayNames(x)
       )[[1]]
+    } else if (!i %in% assayNames(x)) {
+      stop(glue::glue(
+        "`{i}` is not a valid assay name this object! Please select one of {glue::glue_collapse(assayNames(oa), sep = ', ')}"
+      ))
     }
+
     SummarizedExperiment::assay(x = x, i = i, withDimnames = withDimnames)
   }
 )
 
-#' @export
-setGeneric("npx", function(x, ...) standardGeneric("npx"))
-
-#' @export
-#' @importFrom SummarizedExperiment assay
-setMethod(
-  f = "npx",
-  signature = "OlinkAssay",
-  definition = function(x, withDimnames = TRUE) {
-    SummarizedExperiment::assay(x = x, i = "NPX", withDimnames = withDimnames)
-  }
-)
-
-
+#### colData ####
+#' @title colData
+#'
+#' @inheritParams SummarizedExperiment::colData
 #' @export
 setGeneric("colData", function(x, ...) standardGeneric("colData"))
 
+#' @rdname colData
 #' @export
 #' @importFrom methods slot
 setMethod(
@@ -308,6 +433,10 @@ setMethod(
   }
 )
 
+#### rowData ####
+#' @title rowData
+#'
+#' @inheritParams SummarizedExperiment::rowData
 #' @export
 setGeneric("rowData", function(x, ...) standardGeneric("rowData"))
 
@@ -324,12 +453,30 @@ setMethod(
   }
 )
 
-
+#### medianCorrection ####
+#' @title medianCorrection
+#' @description Perform batch correction using per-assay plate assay medians.
+#' @details During import of NPX data or when creating an `OlinkAssay`, we calculate
+#'  the assay medians for the plate controls (those with their `SampleType` labeled
+#'  as "PLATE_CONTROL") and the assay medians and for all samples (`SampleType` ==
+#'  "SAMPLE") and store them in the `metadata` slot as "AssayMedians" and "GlobalMedians",
+#'  respectively. Here, we use those to calculate a correction factor:
+#'  \deqn{
+#'  Correction_{assay} = Median_{plate} - \frac{\sum_{}^{plates}median_{plate}}{n_{plates}}
+#'  }
+#'  \deqn{ExtNPX\_Corrected = ExtNPX - Correction_{assay}}
+#'  The corrected values are then stored as "ExtNPX_Corrected" in the assays slot
+#'
+#' @param method Method to use when correcting values, either "median" or "global median".
+#'  Generally one should use the "median" methods; "global median" is more appropriate for
+#'  plates where the sample groups were not well randomized among wells.
 #' @export
 setGeneric("medianCorrection", function(x, ...) {
   standardGeneric("medianCorrection")
 })
 
+# TODO: either here or in the concat method we need to check that each plate has
+# the necessary AssayMedian/GlobalMedian information
 #' @export
 setMethod(
   f = "medianCorrection",
@@ -407,7 +554,7 @@ setMethod(
       ) |>
       dplyr::mutate(ExtNPX_Corrected = ExtNPX - Correction)
 
-    assay(x, i = "ExtNPX_corrected") <- data_correction |>
+    assay(x, i = "ExtNPX_Corrected") <- data_correction |>
       dplyr::select(SampleID, assay, ExtNPX_Corrected) |>
       dplyr::distinct() |>
       tidyr::pivot_wider(
@@ -418,16 +565,43 @@ setMethod(
 
     metadata(x)[["BatchCorrectionMethod"]] <- method
 
+    for (i in c("negativeControls", "plateControls")) {
+      slot(x, i) <- merge(
+        slot(x, i),
+        meds_correction,
+        by = c("OlinkID", "PlateRef")
+      )
+      slot(x, i)[["ExtNPX_Corrected"]] <- slot(x, i)[["ExtNPX"]] -
+        slot(x, i)[["Correction"]]
+      slot(x, i)[["LogProtExp_Raw"]] <- slot(x, i)[[
+        "LogProtExp"
+      ]] <- slot(x, i)[["ExtNPX_Corrected"]] + log2(1e5)
+    }
+
     x
   }
 )
 
+#### concat ####
+#' @title concat
+#' @description Concatenate or combine two existing OlinkAssay objects.
+#' @details Generally, an OlinkAssay object should initially be created from each
+#'  run plate separately so that the factors required for batch correction are
+#'  appropriately calculated. Using `concat` to combine the objects ensures that
+#'  those factors are retained and, if "median" or "global median" are passed to
+#'  `batch_correction_method`, used to correct the ExtNPX values.
+#'
+#' @param x First object to combine
+#' @param y Second object
+#' @param batch_correction_method method to use in performing batch correction.
+#'  See \link{medianCorrection} for details. Default: NULL
 #' @export
-setGeneric("concat", function(x, ...) standardGeneric("concat"))
+setGeneric("concat", function(x, y, ...) standardGeneric("concat"))
 
 #' @export
 #' @importFrom S4Vectors mcols
 #' @importFrom stats setNames
+#' @importFrom SummarizedExperiment Assays
 setMethod(
   f = "concat",
   signature = "OlinkAssay",
@@ -490,10 +664,12 @@ setMethod(
       purrr::set_names(base_assays)
 
     concat_oa <- OlinkAssay(
-      assays = merged_assays,
+      assays = SummarizedExperiment::Assays(merged_assays),
       colData = concat_coldata,
       rowData = `rownames<-`(concat_rowdata, NULL),
-      metadata = md_list
+      metadata = md_list,
+      negativeControls = rbind(x@negativeControls, y@negativeControls),
+      plateControls = rbind(x@plateControls, y@plateControls)
     )
 
     if (!is.null(batch_correction_method)) {
@@ -503,14 +679,3 @@ setMethod(
     concat_oa
   }
 )
-
-reshape_medians_tbl <- function(.data) {
-  .data |>
-    tibble::as_tibble() |>
-    dplyr::select(-Variance) |>
-    tidyr::pivot_wider(
-      names_from = "PlateRef",
-      names_glue = "{PlateRef}_median",
-      values_from = "Median"
-    )
-}

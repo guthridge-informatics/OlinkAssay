@@ -5,7 +5,7 @@
 \title{umap_groups}
 \usage{
 umap_groups(
-  data,
+  .data,
   groups,
   eps = 7,
   minPts = 10,

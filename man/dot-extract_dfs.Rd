@@ -2,10 +2,11 @@
 % Please edit documentation in R/utils.R
 \name{.extract_dfs}
 \alias{.extract_dfs}
-\title{Title}
+\title{.extract_dfs}
 \usage{
 .extract_dfs(df, filter_assay_controls = FALSE, filter_sample_controls = FALSE)
 }
 \description{
-Title
+Remove controls for either assays, samples, or both from
+the initial NPX dataframe
 }
