@@ -90,6 +90,7 @@ OlinkAssay <- function(
 #'  in the `colData` slot.
 #' @param assay_tables A list of columns in `npxData` to store
 #'  in the `assays` slot. (Default: "Count", "ExtNPX", "PCNormalizedNPX", "NPX")
+#' @param extra_metadata A named list of items to add to the metadata list
 #' @param verbose Should extra information about conversion progress be shown? (Default: FALSE)
 #'
 #' @export
@@ -105,6 +106,7 @@ OlinkAssayFromNPX <- function(
     "PCNormalizedNPX",
     "NPX"
   ),
+  extra_metadata = NULL,
   verbose = FALSE,
   ...
 ) {
@@ -118,7 +120,7 @@ OlinkAssayFromNPX <- function(
   global_medians <- S4Vectors::DataFrame(global_ref(npxData))
 
   if (verbose) {
-    message("Extracting metadata")
+    message("Extracting plate ref")
   }
   plate_ref <- stringr::str_remove(
     string = npxData[["PlateID"]],
@@ -126,6 +128,22 @@ OlinkAssayFromNPX <- function(
   ) |>
     unique()
 
+  if (verbose) {
+    message("Sanitizing sample IDs")
+  }
+  # we have to sanitize the sampleID here
+  # because if we don't, S4Vectors::DataFrame *will*
+  # which will result in mismatched sampleIDs
+
+  # ideally, I'd use janitor::make_clean_names, but
+  # my gods it was slow
+  npxData[["SampleID"]] <- npxData[["SampleID"]] |>
+    stringr::str_replace("^([0-9])", "X\\1") |>
+    stringr::str_replace("[\\|\\.-]", "_")
+
+  if (verbose) {
+    message("Extracting metadata")
+  }
   .metadata <- dplyr::select(
     npxData,
     Panel,
@@ -195,6 +213,10 @@ OlinkAssayFromNPX <- function(
     ) |>
     tibble::column_to_rownames(var = "Assay")
 
+  if (!is.null(extra_metadata)) {
+    .metadata <- c(.metadata, extra_metadata)
+  }
+
   data_cols <- c(
     "Count",
     "ExtNPX",
@@ -202,7 +224,9 @@ OlinkAssayFromNPX <- function(
     "PCNormalizedNPX",
     "ExtNPX_Corrected",
     "LogProtExp",
-    "LogProtExp_Raw"
+    "LogProtExp_Raw",
+    "AssayQC",
+    "SampleQC"
   )
 
   # TODO: Should these include the assay controls? E.g. "Extension control 1", "Incubation control 1"...
@@ -269,7 +293,8 @@ OlinkAssayFromNPX <- function(
           purrr::pluck("SAMPLE") |>
           dplyr::select(SampleID, Assay, tidyselect::all_of(x)) |>
           tidyr::pivot_wider(names_from = "SampleID", values_from = x) |>
-          tibble::column_to_rownames(var = "Assay")
+          tibble::column_to_rownames(var = "Assay") |>
+          as.matrix()
       }
     ) |>
     purrr::set_names(assay_tables)
@@ -288,11 +313,22 @@ OlinkAssayFromNPX <- function(
       SampleID,
       WellID,
       PlateID,
+      Assay,
+      SampleQC,
       OSICategory,
       OSISummary,
       OSITimeToCentrifugation,
       OSIPreparationTemperature
     ) |>
+    dplyr::distinct() |>
+    dplyr::mutate(
+      PerAssaySampleQC = list(rlang::set_names(
+        glue::glue("{Assay}:{SampleQC}"),
+        Assay
+      )),
+      .by = SampleID
+    ) |>
+    dplyr::select(-Assay, -SampleQC) |>
     dplyr::distinct()
 
   if (!is.null(colData)) {
@@ -324,9 +360,28 @@ OlinkAssayFromNPX <- function(
       Assay,
       AssayType,
       OlinkID,
-      Normalization
-      # AssayQC,
-      # AssayQCWarn
+      Normalization,
+      Block,
+      PlateID,
+      AssayQC,
+      AssayQCWarn
+    ) |>
+    dplyr::distinct() |>
+    dplyr::mutate(
+      PerPlateAssayQC = list(rlang::set_names(
+        glue::glue("{PlateID}:{AssayQC}"),
+        PlateID
+      )),
+      PerPlateAssayWarn = list(rlang::set_names(
+        glue::glue("{PlateID}:{AssayQCWarn}"),
+        PlateID
+      )),
+      .by = Assay
+    ) |>
+    dplyr::select(
+      -PlateID,
+      -AssayQC,
+      -AssayQCWarn
     ) |>
     dplyr::distinct() |>
     tibble::column_to_rownames(var = "Assay") |>
@@ -345,6 +400,78 @@ OlinkAssayFromNPX <- function(
     plateControls = plate_control_data
   )
 }
+
+#' @title OlinkAssayFromDisk
+#' @export
+#' @importFrom arrow read_parquet
+OlinkAssayFromDisk <- function(
+  npx_file = NULL,
+  metadata_file = NULL,
+  metadata_sheet = 1,
+  sample_column = "SampleID",
+  project_column = "Project",
+  additional_columns = NULL,
+  extra_metadata = NULL,
+  verbose = FALSE
+) {
+  if (is.character(npx_file)) {
+    if (verbose) {
+      message("Loading NPX file")
+    }
+    df <- arrow::read_parquet(npx_file)
+  } else {
+    df <- S4Vectors::DataFrame()
+  }
+
+  if (is.character(metadata_file)) {
+    ext <- stringr::str_split_i(
+      string = metadata_file,
+      pattern = .Platform$file.sep,
+      i = -1
+    ) |>
+      stringr::str_split_i(pattern = "\\.", i = -1)
+
+    if (!is.null(sample_column)) {
+      sample_column <- rlang::sym(sample_column)
+    }
+    if (!is.null(project_column)) {
+      project_column <- rlang::sym(project_column)
+    }
+
+    if (!is.null(additional_columns)) {
+      loc <- tidyselect::eval_select(
+        rlang::expr(additional_columns),
+        data = manifest
+      )
+    } else {
+      loc <- NULL
+    }
+
+    if (verbose) {
+      message("Loading manifest")
+    }
+    md <- switch(
+      EXPR = ext,
+      "xlsx" = readxl::read_excel(metadata_file, sheet = metadata_sheet),
+      "csv" = readr::read_csv(metadata_file)
+    ) |>
+      dplyr::select(
+        SampleID = {{ sample_column }},
+        Project = {{ project_column }},
+        loc
+      )
+  } else {
+    md <- NULL
+  }
+
+  se <- OlinkAssayFromNPX(
+    npxData = df,
+    colData = md,
+    extra_metadata = extra_metadata,
+    verbose = verbose
+  )
+}
+
 
 #### object validation ####
 S4Vectors::setValidity2("OlinkAssay", function(object) {
@@ -433,6 +560,23 @@ setMethod(
   }
 )
 
+# Lifted from https://github.com/Bioconductor/SummarizedExperiment/blob/ffe9db3f6666e215296d64dc74e9aae7600bddf0/R/SummarizedExperiment-class.R#L139-L150
+setGeneric("colData<-", function(x, ..., value) standardGeneric("colData<-"))
+
+setReplaceMethod(
+  "colData",
+  c("OlinkAssay", "DataFrame"),
+  function(x, ..., value) {
+    if (nrow(value) != ncol(x)) {
+      stop("nrow of supplied 'colData' must equal ncol of object")
+    }
+    x <- updateObject(x, check = FALSE)
+    # this seems like a not-great idea, but it is what is in the {SummarizedExperiment} package?
+    BiocGenerics:::replaceSlots(x, colData = value, check = FALSE)
+  }
+)
+
+
 #### rowData ####
 #' @title rowData
 #'
@@ -453,8 +597,15 @@ setMethod(
   }
 )
 
-#### medianCorrection ####
-#' @title medianCorrection
+# Taken from https://github.com/Bioconductor/SummarizedExperiment/blob/ffe9db3f6666e215296d64dc74e9aae7600bddf0/R/SummarizedExperiment-class.R#L125
+setGeneric("rowData<-", function(x, ..., value) standardGeneric("rowData<-"))
+
+setReplaceMethod("rowData", "OlinkAssay", function(x, ..., value) {
+  S4Vectors::`mcols<-`(x, ..., value = value)
+})
+
+#### batchCorrection ####
+#' @title batchCorrection
 #' @description Perform batch correction using per-assay plate assay medians.
 #' @details During import of NPX data or when creating an `OlinkAssay`, we calculate
 #'  the assay medians for the plate controls (those with their `SampleType` labeled
@@ -471,116 +622,9 @@ setMethod(
 #'  Generally one should use the "median" methods; "global median" is more appropriate for
 #'  plates where the sample groups were not well randomized among wells.
 #' @export
-setGeneric("medianCorrection", function(x, ...) {
-  standardGeneric("medianCorrection")
+setGeneric("batchCorrection", function(x, ...) {
+  standardGeneric("batchCorrection")
 })
-
-# TODO: either here or in the concat method we need to check that each plate has
-# the necessary AssayMedian/GlobalMedian information
-#' @export
-setMethod(
-  f = "medianCorrection",
-  signature = "OlinkAssay",
-  definition = function(
-    x,
-    method = c("median", "global median")
-  ) {
-    method <- match.arg(method)
-
-    correction_values <- switch(
-      EXPR = method,
-      "median" = metadata(x)[["AssayMedians"]],
-      "global median" = metadata(x)[["GlobalMedians"]]
-    )
-
-    median_means <-
-      correction_values |>
-      tibble::as_tibble() |>
-      dplyr::select(-Variance) |>
-      tidyr::pivot_wider(
-        names_from = "PlateRef",
-        names_glue = "{PlateRef}_median",
-        values_from = "Median"
-      ) |>
-      dplyr::rowwise() |>
-      dplyr::transmute(
-        OlinkID = OlinkID,
-        ReferenceMedian = mean(dplyr::c_across(
-          -tidyselect::contains("OlinkID")
-        )),
-      )
-
-    meds_correction <-
-      dplyr::left_join(
-        x = tibble::as_tibble(correction_values),
-        y = median_means,
-        by = dplyr::join_by(OlinkID)
-      ) |>
-      dplyr::mutate(Correction = Median - ReferenceMedian) |>
-      dplyr::select(-Median, -Variance)
-
-    olinkid_to_assay <- rowData(x) |>
-      tibble::as_tibble(rownames = "assay") |>
-      dplyr::select(OlinkID, assay)
-
-    sample_to_plate <- colData(x) |>
-      tibble::as_tibble(rownames = "SampleID") |>
-      dplyr::mutate(
-        PlateRef = stringr::str_remove(string = PlateID, pattern = "_.*$")
-      ) |>
-      dplyr::select(SampleID, PlateRef)
-
-    npx_values <- SummarizedExperiment::assay(x, i = "ExtNPX") |>
-      tibble::rownames_to_column(var = "assay") |>
-      tidyr::pivot_longer(
-        -assay,
-        names_to = "SampleID",
-        values_to = "ExtNPX"
-      )
-
-    data_correction <-
-      dplyr::left_join(
-        npx_values,
-        sample_to_plate,
-        by = dplyr::join_by(SampleID)
-      ) |>
-      dplyr::left_join(
-        y = olinkid_to_assay,
-        by = dplyr::join_by(assay)
-      ) |>
-      dplyr::left_join(
-        y = meds_correction,
-        by = dplyr::join_by(OlinkID, PlateRef)
-      ) |>
-      dplyr::mutate(ExtNPX_Corrected = ExtNPX - Correction)
-
-    assay(x, i = "ExtNPX_Corrected") <- data_correction |>
-      dplyr::select(SampleID, assay, ExtNPX_Corrected) |>
-      dplyr::distinct() |>
-      tidyr::pivot_wider(
-        names_from = "SampleID",
-        values_from = "ExtNPX_Corrected"
-      ) |>
-      tibble::column_to_rownames("assay")
-
-    metadata(x)[["BatchCorrectionMethod"]] <- method
-
-    for (i in c("negativeControls", "plateControls")) {
-      slot(x, i) <- merge(
-        slot(x, i),
-        meds_correction,
-        by = c("OlinkID", "PlateRef")
-      )
-      slot(x, i)[["ExtNPX_Corrected"]] <- slot(x, i)[["ExtNPX"]] -
-        slot(x, i)[["Correction"]]
-      slot(x, i)[["LogProtExp_Raw"]] <- slot(x, i)[[
-        "LogProtExp"
-      ]] <- slot(x, i)[["ExtNPX_Corrected"]] + log2(1e5)
-    }
-
-    x
-  }
-)
 
 #### concat ####
 #' @title concat
@@ -594,12 +638,12 @@ setMethod(
 #' @param x First object to combine
 #' @param y Second object
 #' @param batch_correction_method method to use in performing batch correction.
-#'  See \link{medianCorrection} for details. Default: NULL
+#'  See \link{batchCorrection} for details. Default: NULL
 #' @export
 setGeneric("concat", function(x, y, ...) standardGeneric("concat"))
 
 #' @export
-#' @importFrom S4Vectors mcols
+#' @importFrom S4Vectors mcols metadata
 #' @importFrom stats setNames
 #' @importFrom SummarizedExperiment Assays
 setMethod(
@@ -611,14 +655,7 @@ setMethod(
     batch_correction_method = NULL
   ) {
     concat_coldata <- rbind(colData(x), colData(y))
-    if (all(rownames(rowData(x)) == rownames(rowData(y)))) {
-      concat_rowdata <- rowData(x)
-    } else {
-      missing_in_x <- rownames(rowData(y))[
-        !rownames(rowData(y)) %in% rownames(rowData(x))
-      ]
-      concat_rowdata <- rbind(rowData(x), rowData(y)[, missing_in_x])
-    }
+    concat_rowdata <- .combineRowData(rowData(x), rowData(y))
 
     # merge metadata
     single_value_cols <- c(
@@ -634,18 +671,18 @@ setMethod(
     md_list <- purrr::map(
       .x = single_value_cols,
       .f = \(z) {
-        c(metadata(x)[[z]], metadata(y)[[z]])
+        c(S4Vectors::metadata(x)[[z]], S4Vectors::metadata(y)[[z]])
       }
     ) |>
       stats::setNames(single_value_cols)
 
     md_list[["AssayMedians"]] <- rbind(
-      metadata(x)[["AssayMedians"]],
-      metadata(y)[["AssayMedians"]]
+      S4Vectors::metadata(x)[["AssayMedians"]],
+      S4Vectors::metadata(y)[["AssayMedians"]]
     )
     md_list[["GlobalMedians"]] <- rbind(
-      metadata(x)[["GlobalMedians"]],
-      metadata(y)[["GlobalMedians"]]
+      S4Vectors::metadata(x)[["GlobalMedians"]],
+      S4Vectors::metadata(y)[["GlobalMedians"]]
     )
 
     # `base_assays` being those that are present when naive data
@@ -654,11 +691,25 @@ setMethod(
     # instead relying on repeating any previous corrections.
     # will have to test
     base_assays <- c("Count", "ExtNPX", "PCNormalizedNPX", "NPX")
+    # would love to merge the tables here without dplyr, but using
+    # `merge` from base/S4Vectors results in a loss of row order;
+    # trying to preserve it involves a bit of messier code
     merged_assays <- purrr::map(
       .x = base_assays,
       .f = \(z) {
-        merge(assay(x, i = z), assay(y, i = z), by = "row.names") |>
-          tibble::column_to_rownames("Row.names")
+        dplyr::left_join(
+          tibble::as_tibble(
+            SummarizedExperiment::assay(x, i = z),
+            rownames = "Assay"
+          ),
+          tibble::as_tibble(
+            SummarizedExperiment::assay(y, i = z),
+            rownames = "Assay"
+          ),
+          by = dplyr::join_by("Assay")
+        ) |>
+          tibble::column_to_rownames("Assay") |>
+          as.matrix()
       }
     ) |>
       purrr::set_names(base_assays)
@@ -673,9 +724,48 @@ setMethod(
     )
 
     if (!is.null(batch_correction_method)) {
-      concat_oa <- medianCorrection(concat_oa, method = batch_correction_method)
+      concat_oa <- batchCorrection(concat_oa, method = batch_correction_method)
     }
 
     concat_oa
   }
 )
+
+.combineRowData <- function(t1, t2) {
+  purrr::map(
+    .x = list(t1, t2),
+    .f = \(x) {
+      x |>
+        tibble::as_tibble(rownames = "Assay") |>
+        tidyr::unnest(
+          c(
+            PerPlateAssayQC,
+            PerPlateAssayWarn
+          )
+        )
+    }
+  ) |>
+    purrr::list_rbind() |>
+    tidyr::separate_wider_delim(
+      cols = c(PerPlateAssayQC, PerPlateAssayWarn),
+      delim = ":",
+      names_sep = "_"
+    ) |>
+    dplyr::mutate(
+      PerPlateAssayQC = list(rlang::set_names(
+        glue::glue("{PerPlateAssayQC_1}:{PerPlateAssayQC_2}"),
+        PerPlateAssayQC_1
+      )),
+      PerPlateAssayWarn = list(rlang::set_names(
+        glue::glue("{PerPlateAssayWarn_1}:{PerPlateAssayWarn_2}"),
+        PerPlateAssayWarn_1
+      )),
+      .by = Assay
+    ) |>
+    dplyr::select(
+      -tidyselect::matches("[0-9]+$")
+    ) |>
+    dplyr::distinct() |>
+    tibble::column_to_rownames(var = "Assay") |>
+    S4Vectors::DataFrame()
+}

@@ -25,36 +25,20 @@ params:
 ```{r}
 #| label: load-files
 #| include: false
-
-level_1_files <- purrr::map(
-  .x = list.files(
-    path = params[["level_1_file_path"]],
-    pattern = "parquet",
-    full.names = TRUE
-  ),
-  .f = arrow::read_parquet,
-  .progress = TRUE
-)
-
-level_2_files <-
-  arrow::read_parquet(
-    list.files(
-      params[["level_2_file_path"]],
-      pattern = "parquet",
-      full.names = TRUE
-    )
-  )
+oa <- readRDS("test_obj.RDS")
+# use later, when we finish that function. For now, use readRDS
+# oa <- OlinkAssay::loadFromDisk()
 ```
 
 ## Project Information
 
 `r params$project_name` Olink Explore HT `r Sys.Date() `
 
-`r params$correction_procedure` procedure utilized
+`r params$correction_procedure` procedure used
 
 **`r {stringr::str_glue("{R.version$version.string} used for QC and QC report")} `**
 
-**`r {stringr::str_glue("Olink Explore HT software version {unique(level_2_files$SoftwareVersion)} used for QC and QC report")} `**
+**`r {stringr::str_glue("Olink Explore HT software version {unique(metadata(oa)[["SoftwareVersion"]])[[1]]} used for QC and QC report")} `**
 
 ## Manufacturer's Assay and Sample QC Information
 
@@ -70,16 +54,14 @@ should be removed prior to analysis as these are assay controls
 {{< pagebreak >}}
 
 ```{r}
+#| label: plot-qc-metrics
 #| echo: false
 #| warning: false
 #| message: false
 #| results: hide
 #| fig-keep: all
-
-qc_check <- purrr::map(level_1_files, olinkqc::Olink_qc, .progress = TRUE)
-
 # Basic piechart
-purrr::map(qc_check, olinkqc::plot_qc)
+QCPlot(oa)
 ```
 
 ```{r}
@@ -88,30 +70,24 @@ purrr::map(qc_check, olinkqc::plot_qc)
 #| warning: false
 #| message: false
 
-bound_level1 <-
-  level_1_files |>
-  purrr::list_rbind()
+# bound_level1 <-
+#   level_1_files |>
+#   purrr::list_rbind()
 
-n_assay <-
-  bound_level1 |>
-  dplyr::count(OlinkID)
+sample_qc <- retrieveSampleQC(oa)
+assay_qc <- retrieveAssayQC(oa)
+
+n_assay <- dplyr::n_distinct(assay_qc[["OlinkID"]])
+sample_tot <- dplyr::n_distinct(sample_qc[["SampleID"]])
 
 sample_fails <-
-  bound_level1 |>
-  dplyr::filter(
-    SampleType == "SAMPLE",
-    SampleQC == "FAIL"
-  ) |>
-  dplyr::distinct(SampleID)
-
-sample_tot <-
-  bound_level1 |>
-  dplyr::filter(SampleType == "SAMPLE") |>
+  sample_qc |>
+  dplyr::filter(SampleQC == "FAIL") |>
   dplyr::distinct(SampleID)
 
 # control failure
 control_fails <-
-  bound_level1 |>
+  npxData |>
   dplyr::filter(
     SampleType != "SAMPLE",
     SampleQC == "FAIL"
@@ -119,7 +95,7 @@ control_fails <-
   dplyr::distinct(PlateID, SampleID, WellID)
 
 control_tot <-
-  bound_level1 |>
+  npxData |>
   dplyr::filter(SampleType != "SAMPLE") |>
   dplyr::distinct(PlateID, SampleID, WellID)
 
@@ -226,28 +202,28 @@ below the lower limits of detection per sample per 96-well source plate:\
 plate_list <- split(level_2_files, f = level_2_files[["PlateID"]])
 
 graph_bars <- function(.data) {
-  .data |> 
-    dplyr::filter(sample_level_qc == "Below LLOD") |> 
-    dplyr::count(SampleID, sample_level_qc, name="count") |> 
-    dplyr::mutate(percentage = 100 * count / 5440) |> 
+  .data |>
+    dplyr::filter(sample_level_qc == "Below LLOD") |>
+    dplyr::count(SampleID, sample_level_qc, name = "count") |>
+    dplyr::mutate(percentage = 100 * count / 5440) |>
     ggplot2::ggplot(
-      mapping=ggplot2::aes(
+      mapping = ggplot2::aes(
         x = SampleID,
         y = percentage
-        )
-    ) +
-      ggplot2::geom_col() +
-      ggplot2::theme_classic() +
-      ggplot2::ylab("% Total Assays Below LLOD") +
-      ggplot2::theme(
-        axis.text.x = ggplot2::element_blank(),
-        axis.ticks.x = ggplot2::element_blank()
       )
+    ) +
+    ggplot2::geom_col() +
+    ggplot2::theme_classic() +
+    ggplot2::ylab("% Total Assays Below LLOD") +
+    ggplot2::theme(
+      axis.text.x = ggplot2::element_blank(),
+      axis.ticks.x = ggplot2::element_blank()
+    )
 }
 
-upper_lim <- level_2_files |> 
-  dplyr::filter(sample_level_qc == "Below LLOD") |> 
-  dplyr::count(SampleID, sample_level_qc, name="count") |> 
+upper_lim <- level_2_files |>
+  dplyr::filter(sample_level_qc == "Below LLOD") |>
+  dplyr::count(SampleID, sample_level_qc, name = "count") |>
   dplyr::mutate(lim_percentage = (100 * count / 5444) + 10)
 
 ylimit <- max(round(upper_lim[["lim_percentage"]], digits = 0))
@@ -255,8 +231,8 @@ ylimit <- max(round(upper_lim[["lim_percentage"]], digits = 0))
 purrr::imap(
   .x = plate_list,
   .f = \(plate, plate_name) {
-    graph_bars(plate) + 
-      ggplot2::ggtitle(plate_name) + 
+    graph_bars(plate) +
+      ggplot2::ggtitle(plate_name) +
       ggplot2::ylim(c(0, ylimit))
   }
 )
@@ -275,45 +251,53 @@ plate Plate Controls.
 #| warning: false
 #| message: false
 
-missing_analytes <- level_2_files |> 
-  dplyr::filter(AssayType == "assay") |> 
-  dplyr::filter(is.na(ExtNPX)) |> 
-  dplyr::count(OlinkID, name="count") |> 
+missing_analytes <- level_2_files |>
+  dplyr::filter(AssayType == "assay") |>
+  dplyr::filter(is.na(ExtNPX)) |>
+  dplyr::count(OlinkID, name = "count") |>
   dplyr::filter(count > 80)
 
 purrr::map2(
   .x = c("ExtNPX", "ExtNPX_Corrected", "LogProtExp_Raw"),
   .y = c("Raw ExtNPX", "Batch-Corrected ExtNPX", "Batch-Corrected LogProtExp"),
-  .f = \(x, y) olinkqc::batch_correction_umap_prep(
-    .data = dplyr::filter(level_2_files, !OlinkID %in% missing_analytes[["OlinkID"]]),
-    .col = x,
-    exclude_high_variance_assays = FALSE,
-    title = y
-  )
+  .f = \(x, y) {
+    olinkqc::batch_correction_umap_prep(
+      .data = dplyr::filter(
+        level_2_files,
+        !OlinkID %in% missing_analytes[["OlinkID"]]
+      ),
+      .col = x,
+      exclude_high_variance_assays = FALSE,
+      title = y
+    )
+  }
 )
 ```
 
 ### With High-Variance Analytes Removed
 
 ```{r}
+#| label: remove-high-var-assays
 #| echo: false
 #| warning: false
 #| message: false
 
-assay_exclude <- level_2_files |> 
-  dplyr::filter(high_var_assay == "High Variance") |> 
-  dplyr::group_by(OlinkID, Assay) |> 
+assay_exclude <- level_2_files |>
+  dplyr::filter(high_var_assay == "High Variance") |>
+  dplyr::group_by(OlinkID, Assay) |>
   dplyr::summarise()
 
 purrr::map2(
   .x = c("ExtNPX", "ExtNPX_Corrected", "LogProtExp_Raw"),
   .y = c("Raw ExtNPX", "Batch-Corrected ExtNPX", "Batch-Corrected LogProtExp"),
-  .f = \(x, y) olinkqc::batch_correction_umap_prep(
-    .data = level_2_files,
-    .col = x,
-    exclude_high_variance_assays = TRUE,
-    title = y
-  )
+  .f = \(x, y) {
+    olinkqc::batch_correction_umap_prep(
+      .data = level_2_files,
+      .col = x,
+      exclude_high_variance_assays = TRUE,
+      title = y
+    )
+  }
 )
 ```
 

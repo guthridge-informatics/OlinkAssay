@@ -12,7 +12,7 @@ concat(x, y, ...)
 \item{y}{Second object}
 
 \item{batch_correction_method}{method to use in performing batch correction.
-See \link{medianCorrection} for details. Default: NULL}
+See \link{batchCorrection} for details. Default: NULL}
 }
 \description{
 Concatenate or combine two existing OlinkAssay objects.

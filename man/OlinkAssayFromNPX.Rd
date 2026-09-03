@@ -8,6 +8,7 @@ OlinkAssayFromNPX(
   npxData,
   colData = NULL,
   assay_tables = c("Count", "ExtNPX", "PCNormalizedNPX", "NPX"),
+  extra_metadata = NULL,
   verbose = FALSE,
   ...
 )
@@ -20,6 +21,8 @@ in the \code{colData} slot.}
 
 \item{assay_tables}{A list of columns in \code{npxData} to store
 in the \code{assays} slot. (Default: "Count", "ExtNPX", "PCNormalizedNPX", "NPX")}
+
+\item{extra_metadata}{A named list of items to add to the metadata list}
 
 \item{verbose}{Should extra information about conversion progress be shown? (Default: FALSE)}
 }
