@@ -23,9 +23,7 @@ the report for the batch correction procedure}
 
 \item{report_name}{name to give the output report}
 
-\item{sdp_directory}{path to the directory that
-includes the project \code{Level_1} and \code{Level_2}
-outputs.}
+\item{template_file}{path to Quarto qmd file to use for report.}
 }
 \value{
 Nothing, but writes a PDF named \code{report_name} to \code{output_dir}
@@ -37,8 +35,9 @@ project.
 \examples{
 \dontrun{
 generate_performance_report(
-   project_name = "Volcano Science Project",
-   correction_procedure = "median",
+   olink_assay = here::here("olink_assay.RDS"),
+   project_name = "Science Fair Project",
+   correction_procedure = "Median correction",
    output_dir = "/home/user/reports",
    report_name = "assay_performance_report.pdf"
  )

@@ -2,17 +2,17 @@
 
 ## [0.4.0] - 2026/09/11
 
-## Added
+### Added
 - More namespace scoping for imported functions
 
-## Changed
+### Changed
 - Updates to the `performance_report_template.qmd` file and the `generate_performance_report()` that calls it to work with the `OlinkAssay` class
 - Updated the `batch_correction_umap_prep()` function to `batchCorrectionUMAP()` as a `OlinkAssay` method
 - Revised the `OlinkAssayFromNPX` constructor so that the negative and plate control data
   retain "SampleID" and the original "PlateID"
 - When merging two `OlinkAssay` objects, we now look at the assays that are common between them and merge those AND the base assays.
 
-## Fixed
+### Fixed
 - Added "SampleAssayQC" to the list of assays merged when concatenating objects
 
 ## [0.3.0] - 2026/09/03
