@@ -239,13 +239,14 @@ OlinkAssayFromNPX <- function(
       Assay,
       OlinkID,
       PlateID,
+      SampleID,
       tidyselect::any_of(data_cols)
     ) |>
     dplyr::mutate(
       Assay = as.factor(Assay), # not strictly necessary, but given that there's a set number of Assay names, seems appropriate
-      PlateID = stringr::str_remove(string = PlateID, pattern = "_plate[0-9]$")
+      PlateRef = stringr::str_remove(string = PlateID, pattern = "_plate[0-9]$")
     ) |>
-    dplyr::rename(PlateRef = PlateID) |>
+    # dplyr::rename(PlateRef = PlateID) |>
     S4Vectors::DataFrame()
 
   plate_control_data <-
@@ -257,13 +258,14 @@ OlinkAssayFromNPX <- function(
       Assay,
       OlinkID,
       PlateID,
+      SampleID,
       tidyselect::any_of(data_cols)
     ) |>
     dplyr::mutate(
       Assay = as.factor(Assay),
-      PlateID = stringr::str_remove(string = PlateID, pattern = "_plate[0-9]$")
+      PlateRef = stringr::str_remove(string = PlateID, pattern = "_plate[0-9]$")
     ) |>
-    dplyr::rename(PlateRef = PlateID) |>
+    # dplyr::rename(PlateRef = PlateID) |>
     S4Vectors::DataFrame()
 
   if (verbose) {
@@ -690,7 +692,20 @@ setMethod(
     # that merging already corrected data should be included and am
     # instead relying on repeating any previous corrections.
     # will have to test
-    base_assays <- c("Count", "ExtNPX", "PCNormalizedNPX", "NPX")
+    common_assays <- intersect(
+      SummarizedExperiment::assayNames(x),
+      SummarizedExperiment::assayNames(y)
+    )
+    base_assays <- intersect(
+      common_assays,
+      c(
+        "Count",
+        "ExtNPX",
+        "PCNormalizedNPX",
+        "NPX",
+        "SampleAssayQC"
+      )
+    )
     # would love to merge the tables here without dplyr, but using
     # `merge` from base/S4Vectors results in a loss of row order;
     # trying to preserve it involves a bit of messier code

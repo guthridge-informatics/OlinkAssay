@@ -30,71 +30,101 @@ y <- readFromDisk(
 )
 
 
-npx <- assay(x) |>
-  dplyr::mutate(LogProtExp = ExtNPX + log2(1e5)) %>% # transform into LogProExp
-  dplyr::mutate(LogProtExp_Raw = ExtNPX + log2(1e5)) # transform into LogProExp
+x <- oa
+.assay <- "ExtNPX"
+exclude_high_variance_assays <- FALSE
+title <- "It works!"
 
-ht_scaled_npx_sample <- npx %>%
-  dplyr::filter(SampleType == "SAMPLE") %>%
-  dplyr::left_join(., ht_nc_vals, by = c("Assay", "OlinkID")) %>%
-  dplyr::left_join(., ht_pc_vals, by = c("Assay", "OlinkID")) %>%
-  dplyr::mutate(
-    sample_level_qc = dplyr::case_when(
-      LogProtExp < median_nc ~ "Below LLOD",
-      LogProtExp < iqr_nc ~ "Below LLOQ",
-      T ~ "Pass"
-    )
-  ) %>%
-  dplyr::mutate(
-    LogProtExp = dplyr::case_when(
-      LogProtExp < median_nc ~ 0,
-      LogProtExp < iqr_nc ~ iqr_nc,
-      T ~ LogProtExp
-    )
+if (exclude_high_variance_assays) {
+  included_assays <- rownames(rowData(x))[which(
+    rowData(x)[["AssayType"]] == "assay" &
+      rowData(x)[["high_var_assay"]] == "Pass"
+  )]
+} else {
+  included_assays <- rownames(rowData(x))[which(
+    rowData(x)[["AssayType"]] == "assay"
+  )]
+}
+
+included_samples <-
+  rownames(colData(x)[which(colData(x)[["Project"]] != "Bridge"), ])
+
+umap_intermediate <-
+  assay(x, .assay)[
+    included_assays,
+    included_samples
+  ]
+
+sample_md <-
+  colData(oa) |>
+  tibble::as_tibble(rownames = "SampleID") |>
+  dplyr::select(
+    SampleID,
+    PlateID,
+    Project
   )
 
-
-old_ht_nc_vals <- npxData %>%
-  dplyr::filter(SampleType == "NEGATIVE_CONTROL") %>%
-  dplyr::group_by(Assay, OlinkID) %>%
-  dplyr::summarise(
-    median_nc = median(na.omit(LogProtExp)),
-    iqr_nc = as.numeric(quantile(na.omit(LogProtExp), 0.75)),
-    .groups = 'drop'
-  )
-
-# Calculating Plate Control coefficient of variance
-old_ht_pc_vals <- npxData %>%
-  dplyr::filter(SampleType == "PLATE_CONTROL") %>%
-  dplyr::group_by(Assay, OlinkID) %>%
-  dplyr::summarise(
-    pc_cv = 100 * sd(LogProtExp) / mean(LogProtExp),
-    .groups = 'drop'
-  ) %>%
+p <- umap_intermediate |>
+  t() |>
+  as.data.frame() |>
   dplyr::mutate(
-    high_var_assay = dplyr::case_when(
-      pc_cv > 20 ~ "High Variance",
-      T ~ "Pass"
-    )
-  ) %>%
-  dplyr::select(-pc_cv)
-
-old_ht_scaled_npx_sample <-
-  npxData |>
-  dplyr::filter(SampleType == "SAMPLE") |>
-  dplyr::left_join(ht_nc_vals, by = c("Assay", "OlinkID")) |>
-  dplyr::left_join(ht_pc_vals, by = c("Assay", "OlinkID")) |>
-  dplyr::mutate(
-    sample_level_qc = dplyr::case_when(
-      LogProtExp < median_nc ~ "Below LLOD",
-      LogProtExp < iqr_nc ~ "Below LLOQ",
-      T ~ "Pass"
+    dplyr::across(
+      .cols = tidyselect::where(is.numeric),
+      .fns = \(x) {
+        dplyr::if_else(
+          is.nan(x),
+          true = 0,
+          false = x
+        )
+      }
     )
   ) |>
-  dplyr::mutate(
-    LogProtExp = dplyr::case_when(
-      LogProtExp < median_nc ~ 0,
-      LogProtExp < iqr_nc ~ iqr_nc,
-      T ~ LogProtExp
+  uwot::umap(
+    scale = TRUE,
+    min_dist = 0.4,
+    seed = 825
+  ) |>
+  tibble::as_tibble(
+    rownames = "SampleID",
+    .name_repair = "universal_quiet"
+  ) |>
+  dplyr::rename(
+    UMAP1 = `...1`,
+    UMAP2 = `...2`
+  ) |>
+  dplyr::left_join(
+    y = sample_md,
+    by = dplyr::join_by(SampleID == SampleID)
+  ) |>
+  ggplot2::ggplot(
+    mapping = ggplot2::aes(
+      x = UMAP1,
+      y = UMAP2,
+      color = PlateID
     )
+  ) +
+  ggplot2::geom_point(size = 3) +
+  ggplot2::theme_minimal() +
+  ggplot2::theme(
+    legend.text = ggplot2::element_text(face = "bold", size = 12),
+    legend.title = ggplot2::element_blank(),
+    axis.title = ggplot2::element_text(size = 12)
   )
+
+if (!is.null(title)) {
+  p + ggplot2::ggtitle(title)
+} else {
+  p
+}
+
+quarto::quarto_render(
+  input = template_file,
+  output_format = "pdf",
+  output_file = "performance_report_template.pdf",
+  execute_params = list(
+    project_name = project_name,
+    correction_procedure = correction_procedure,
+    olink_assay_file = olink_assay
+  ),
+  quiet = FALSE
+)

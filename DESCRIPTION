@@ -24,6 +24,7 @@ Imports:
     dbscan,
     dplyr,
     flextable,
+    ggforce,
     ggplot2,
     ggrepel,
     glue,

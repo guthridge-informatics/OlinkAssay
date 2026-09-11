@@ -12,8 +12,8 @@ export(QCPlot)
 export(SampleAssayQC)
 export(assay)
 export(batchCorrection)
+export(batchCorrectionUMAP)
 export(batch_correction)
-export(batch_correction_umap_prep)
 export(colData)
 export(concat)
 export(ctrl_ref)
@@ -49,6 +49,7 @@ exportMethods(QCPlot)
 exportMethods(SampleAssayQC)
 exportMethods(assay)
 exportMethods(batchCorrection)
+exportMethods(batchCorrectionUMAP)
 exportMethods(colData)
 exportMethods(concat)
 exportMethods(level2Process)
@@ -126,10 +127,12 @@ importFrom(ggplot2,
   stat_bin,
   theme,
   theme_classic,
+  theme_minimal,
   theme_void,
   vars
 )
 importFrom(ggrepel,geom_label_repel)
+importFrom(glue,glue)
 importFrom(grid,
   arrow,
   unit

@@ -97,6 +97,14 @@ requires = [
 ]
 
 [[package]]
+name = "MASS"
+version = "7.3.66"
+source = "cran"
+raw_version = "7.3-66"
+url = "https://cran.r-project.org/src/contrib/MASS_7.3-66.tar.gz"
+checksum = "md5:272648f9e6c9f1855417b099ea03ee46"
+
+[[package]]
 name = "Matrix"
 version = "1.7.6"
 source = "cran"
@@ -440,11 +448,11 @@ checksum = "md5:f36540550af63b0db8c78429d7366998"
 
 [[package]]
 name = "bit64"
-version = "4.8.4"
+version = "4.8.6"
 source = "cran"
-raw_version = "4.8.4"
-url = "https://cran.r-project.org/src/contrib/bit64_4.8.4.tar.gz"
-checksum = "md5:a02c94b7ea2637da988127cb12933fbf"
+raw_version = "4.8.6"
+url = "https://cran.r-project.org/src/contrib/bit64_4.8.6.tar.gz"
+checksum = "md5:8c4fb59f92ce6b09ecdc8e0f7a186504"
 requires = ["bit"]
 
 [[package]]
@@ -1026,6 +1034,30 @@ requires = [
 ]
 
 [[package]]
+name = "ggforce"
+version = "0.5.0"
+source = "cran"
+raw_version = "0.5.0"
+url = "https://cran.r-project.org/src/contrib/ggforce_0.5.0.tar.gz"
+checksum = "md5:1c7db06e82968ef2b402fd7a96af55b8"
+requires = [
+    "ggplot2",
+    "scales",
+    "MASS",
+    "tweenr",
+    "gtable",
+    "rlang",
+    "polyclip",
+    "tidyselect",
+    "withr",
+    "lifecycle",
+    "cli",
+    "vctrs",
+    "systemfonts",
+    "cpp11",
+]
+
+[[package]]
 name = "ggplot2"
 version = "4.0.3"
 source = "cran"
@@ -1259,11 +1291,11 @@ requires = [
 
 [[package]]
 name = "httr"
-version = "1.4.8"
+version = "1.4.9"
 source = "cran"
-raw_version = "1.4.8"
-url = "https://cran.r-project.org/src/contrib/httr_1.4.8.tar.gz"
-checksum = "md5:8756015b94a9cff6f410ca4de8557f12"
+raw_version = "1.4.9"
+url = "https://cran.r-project.org/src/contrib/httr_1.4.9.tar.gz"
+checksum = "md5:22833540ae6b924a3de576cf6c9c8e50"
 requires = [
     "curl",
     "jsonlite",
@@ -1378,11 +1410,11 @@ checksum = "md5:3e54e6fbc0c9063936e3d01e91419c14"
 
 [[package]]
 name = "knitr"
-version = "1.51.0"
+version = "1.52.0"
 source = "cran"
-raw_version = "1.51"
-url = "https://cran.r-project.org/src/contrib/knitr_1.51.tar.gz"
-checksum = "md5:79f32f24b572fe198baca8882d6aa87f"
+raw_version = "1.52"
+url = "https://cran.r-project.org/src/contrib/knitr_1.52.tar.gz"
+checksum = "md5:0fc9f044e50fd86269f05b6067159bc6"
 requires = [
     "evaluate",
     "highr",
@@ -1433,11 +1465,11 @@ requires = [
 
 [[package]]
 name = "lobstr"
-version = "1.2.1"
+version = "1.2.2"
 source = "cran"
-raw_version = "1.2.1"
-url = "https://cran.r-project.org/src/contrib/lobstr_1.2.1.tar.gz"
-checksum = "md5:e95987d7c059397aa0129a8ef35bcb04"
+raw_version = "1.2.2"
+url = "https://cran.r-project.org/src/contrib/lobstr_1.2.2.tar.gz"
+checksum = "md5:571ea0c261b5d28cd033e1dd43d44b00"
 requires = [
     "crayon",
     "prettyunits",
@@ -1679,6 +1711,14 @@ requires = [
 ]
 
 [[package]]
+name = "polyclip"
+version = "1.10.7"
+source = "cran"
+raw_version = "1.10-7"
+url = "https://cran.r-project.org/src/contrib/polyclip_1.10-7.tar.gz"
+checksum = "md5:1925777475f45c333affbd495d1cd32c"
+
+[[package]]
 name = "praise"
 version = "1.0.0"
 source = "cran"
@@ -1903,6 +1943,14 @@ checksum = "md5:41627df5d3fbf98f0cf98c027e14af00"
 requires = ["tibble"]
 
 [[package]]
+name = "remotes"
+version = "2.5.0"
+source = "cran"
+raw_version = "2.5.0"
+url = "https://cran.r-project.org/src/contrib/remotes_2.5.0.tar.gz"
+checksum = "md5:4cb0cd9d66630548fedd4e56d3564b90"
+
+[[package]]
 name = "reprex"
 version = "2.1.1"
 source = "cran"
@@ -1933,11 +1981,11 @@ checksum = "md5:b52c165e43f4d7fe5cfa15c5c9467ff4"
 
 [[package]]
 name = "rmarkdown"
-version = "2.31.0"
+version = "2.32.0"
 source = "cran"
-raw_version = "2.31"
-url = "https://cran.r-project.org/src/contrib/rmarkdown_2.31.tar.gz"
-checksum = "md5:8f7a4eef6b62e7f2284550c3134f28c8"
+raw_version = "2.32"
+url = "https://cran.r-project.org/src/contrib/rmarkdown_2.32.tar.gz"
+checksum = "md5:01b497e82b287a2269a965119ed59271"
 requires = [
     "bslib",
     "evaluate",
@@ -2367,6 +2415,21 @@ checksum = "md5:c680dc21cfd948a22a4f72427967e3e0"
 requires = ["xfun"]
 
 [[package]]
+name = "tweenr"
+version = "2.0.3"
+source = "cran"
+raw_version = "2.0.3"
+url = "https://cran.r-project.org/src/contrib/tweenr_2.0.3.tar.gz"
+checksum = "md5:eb40435b47811466581a5b4365456e11"
+requires = [
+    "farver",
+    "magrittr",
+    "rlang",
+    "vctrs",
+    "cpp11",
+]
+
+[[package]]
 name = "tzdb"
 version = "0.5.0"
 source = "cran"
@@ -2437,11 +2500,11 @@ checksum = "md5:37ebfbe8de2e1275d465cc2f569f1b50"
 
 [[package]]
 name = "uwot"
-version = "0.2.4"
+version = "0.2.5"
 source = "cran"
-raw_version = "0.2.4"
-url = "https://cran.r-project.org/src/contrib/uwot_0.2.4.tar.gz"
-checksum = "md5:4a72402e9d5217e4f57f3166aeaca8db"
+raw_version = "0.2.5"
+url = "https://cran.r-project.org/src/contrib/uwot_0.2.5.tar.gz"
+checksum = "md5:194ecf9261ba79778bca5f2751dcec11"
 requires = [
     "Matrix",
     "FNN",

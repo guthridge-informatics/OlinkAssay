@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.4.0] - 2026/09/11
+
+## Added
+- More namespace scoping for imported functions
+
+## Changed
+- Updates to the `performance_report_template.qmd` file and the `generate_performance_report()` that calls it to work with the `OlinkAssay` class
+- Updated the `batch_correction_umap_prep()` function to `batchCorrectionUMAP()` as a `OlinkAssay` method
+- Revised the `OlinkAssayFromNPX` constructor so that the negative and plate control data
+  retain "SampleID" and the original "PlateID"
+- When merging two `OlinkAssay` objects, we now look at the assays that are common between them and merge those AND the base assays.
+
+## Fixed
+- Added "SampleAssayQC" to the list of assays merged when concatenating objects
+
 ## [0.3.0] - 2026/09/03
 
 ### Added
@@ -52,6 +67,7 @@
  and renamed the previous one to `OlinkAssayFromNPX`
 - moved `readFromDisk` function to the `io.R` submodule
 
+[0.4.0]: https://github.com/milescsmith/scorphan/releases/compare/0.3.0..0.4.0
 [0.3.0]: https://github.com/milescsmith/scorphan/releases/compare/0.2.0..0.3.0
 [0.2.0]: https://github.com/milescsmith/scorphan/releases/compare/0.1.0..0.2.0
 [0.1.0]: https://github.com/milescsmith/scorphan/releases/tag/v0.1.0

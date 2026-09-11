@@ -57,19 +57,24 @@ setMethod(
     ht_nc_vals <-
       slot(x, "negativeControls") |>
       tibble::as_tibble() |>
-      dplyr::group_by(Assay, OlinkID) %>%
+      dplyr::group_by(Assay, OlinkID) |>
       dplyr::summarise(
         median_nc = stats::median(stats::na.omit(LogProtExp)),
         iqr_nc = as.numeric(stats::quantile(stats::na.omit(LogProtExp), 0.75)),
         .groups = 'drop'
       )
 
-    ht_pc_vals <-
+    new_ht_pc_vals <-
       slot(x, "plateControls") |>
       tibble::as_tibble() |>
-      dplyr::group_by(Assay, OlinkID) %>%
+      dplyr::group_by(Assay, OlinkID) |>
       dplyr::summarise(
-        pc_cv = 100 * stats::sd(LogProtExp) / mean(LogProtExp),
+        pc_cv = 100 *
+          stats::sd(stats::na.omit(LogProtExp)) /
+          mean(stats::na.omit(LogProtExp)),
+        failure_rate = 100 *
+          (sum(if_else(condition = AssayQC != "PASS", true = 1, false = 0)) /
+            n()),
         .groups = 'drop'
       ) %>%
       dplyr::mutate(

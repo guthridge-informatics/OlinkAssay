@@ -5,11 +5,12 @@
 \title{generate_performance_report}
 \usage{
 generate_performance_report(
-  project_name,
-  correction_procedure,
-  sdp_directory,
-  output_dir,
-  report_name = "assay_performance_report.pdf"
+  olink_assay,
+  project_name = "Science Project",
+  correction_procedure = "median",
+  output_dir = here::here(),
+  report_name = "assay_performance_report.pdf",
+  template_file = NULL
 )
 }
 \arguments{
@@ -18,13 +19,13 @@ generate_performance_report(
 \item{correction_procedure}{description to use in
 the report for the batch correction procedure}
 
-\item{sdp_directory}{path to the directory that
-includes the project \code{Level_1} and \code{Level_2}
-outputs.}
-
 \item{output_dir}{path to where the report should be output}
 
 \item{report_name}{name to give the output report}
+
+\item{sdp_directory}{path to the directory that
+includes the project \code{Level_1} and \code{Level_2}
+outputs.}
 }
 \value{
 Nothing, but writes a PDF named \code{report_name} to \code{output_dir}
@@ -38,7 +39,6 @@ project.
 generate_performance_report(
    project_name = "Volcano Science Project",
    correction_procedure = "median",
-   sdp_directory = "/home/user/volcano_project/sdp",
    output_dir = "/home/user/reports",
    report_name = "assay_performance_report.pdf"
  )
